@@ -8,7 +8,8 @@ import ManageCoupons from './components/ManageCoupons';
 import EditCoupon from "./components/EditCoupon";
 import VendorLogin from './components/VendorLogin';
 import VendorProfile from './components/VendorProfile';
-import RedeemCoupon from './components/RedeemCoupon';
+import RedeemCoupon from './components/redeemCoupon';
+
 
 const App = () => {
   return (
