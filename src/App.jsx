@@ -8,7 +8,7 @@ import ManageCoupons from './components/ManageCoupons';
 import EditCoupon from "./components/EditCoupon";
 import VendorLogin from './components/VendorLogin';
 import VendorProfile from './components/VendorProfile';
-import RedeemCoupon from './components/RedeemCoupon';
+import redeemcoupon from './components/redeemcoupon';
 
 const App = () => {
   return (
@@ -20,7 +20,7 @@ const App = () => {
       <Route path="/edit-coupon/:id" element={<EditCoupon />} />
       <Route path="/login" element={<VendorLogin />} />
       <Route path="/vendor-profile" element={<VendorProfile />} />
-      <Route path="/redeem-coupon" element={<RedeemCoupon />} />
+      <Route path="/redeem-coupon" element={<redeemcoupon />} />
     </Routes>
   );
 };
