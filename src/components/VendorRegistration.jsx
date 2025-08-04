@@ -823,6 +823,12 @@ const VendorRegistration = () => {
                     </div>
                     <p className="text-gray-400 mb-4">Connecting businesses with customers through amazing deals</p>
                     <p className="text-gray-500 text-sm">© 2025 EzyFix. All rights reserved.</p>
+                    <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-2 text-xs text-gray-500">
+                        <Link to="/policy" className="hover:underline">Policy</Link>
+                        <Link to="/terms" className="hover:underline">Terms</Link>
+                        <Link to="/refund" className="hover:underline">Refund</Link>
+                        <Link to="/contact" className="hover:underline">ContactUs</Link>
+                      </div>
                 </div>
             </footer>
             {showConfirmation && (
