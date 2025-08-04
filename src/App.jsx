@@ -11,7 +11,7 @@ import VendorProfile from './components/VendorProfile';
 import RedeemCoupon from './components/redeemcoupon';
 import Policy from './components/Policy';
 import Terms from './components/Terms';
-import Refund from './components/refund';
+import Refund from './components/Refund';
 import Contact from './components/contact';
 
 
