@@ -241,7 +241,7 @@
 
         <footer className="bg-gray-100 py-4 text-center text-sm text-gray-500">
             &copy; 2025 EzyFix Vendor Portal
-        <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-2 text-xs text-gray-500">
+        <div className="flex flex-wrap justify-center gap-4 mt-2 text-xs text-gray-500">
             <Link to="/policy" className="hover:underline">Policy</Link>
             <Link to="/terms" className="hover:underline">Terms</Link>
             <Link to="/refund" className="hover:underline">Refund</Link>
