@@ -9,10 +9,6 @@ import EditCoupon from "./components/EditCoupon";
 import VendorLogin from './components/VendorLogin';
 import VendorProfile from './components/VendorProfile';
 import RedeemCoupon from './components/redeemcoupon';
-import Policy from './components/Policy';
-import Terms from './components/Terms';
-import Refund from './components/Refund';
-import Contact from './components/contact';
 
 
 const App = () => {
@@ -26,10 +22,6 @@ const App = () => {
       <Route path="/login" element={<VendorLogin />} />
       <Route path="/vendor-profile" element={<VendorProfile />} />
       <Route path="/redeem-coupon" element={<RedeemCoupon />} />
-      <Route path="/policy" element={<Policy />} />
-      <Route path="/terms" element={<Terms />} />
-      <Route path="/refund" element={<Refund/>} />
-      <Route path="/contact" element={<Contact />} />
     </Routes>
   );
 };
