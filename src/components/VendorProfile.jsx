@@ -72,35 +72,43 @@ import React, { useEffect, useState } from 'react';
     };
 
     const saveChanges = async () => {
-            if (!vendorId) return;
+    if (!vendorId) return;
 
-            try {
-            const res = await fetch(`${BASE_URL}/api/auth/update/${vendorId}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                contact_person: vendorData.name,
-                email: vendorData.email,
-                phone: vendorData.phone,
-                business_name: vendorData.business,
-                business_type: vendorData.businessType,
-                description: vendorData.description,
-                address: vendorData.address,
-                maps_link: vendorData.googleMapsLink,
-                profileImage: profileImage,
-                }),
-            });
+    const payload = {
+        contact_person: vendorData.name,
+        email: vendorData.email,
+        phone: vendorData.phone,
+        business_name: vendorData.business,
+        business_type: vendorData.businessType,
+        description: vendorData.description,
+        address: vendorData.address,
+        maps_link: vendorData.googleMapsLink,
+        profileImage: profileImage,
+    };
 
-            if (!res.ok) throw new Error("Update failed");
+    console.log("📤 Sending update payload:", payload);
 
-            setEditMode(false);
-            alert("Profile updated successfully!");
-            } catch (err) {
-            console.error("Error updating profile:", err);
-            alert("Something went wrong!");
-            }
-        };
+    try {
+        const res = await fetch(`${BASE_URL}/api/auth/update/${vendorId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload),
+        });
 
+        const result = await res.json();
+        console.log("✅ Update response:", result);
+
+        if (!res.ok) throw new Error("Update failed");
+
+        setEditMode(false);
+        alert("Profile updated successfully!");
+    } catch (err) {
+        console.error("❌ Error updating profile:", err);
+        alert("Something went wrong!");
+        }
+    };
 
     const handleLogout = () => {
         localStorage.clear();
