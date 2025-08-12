@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import RazorpayButton from "./RazorpayHostedButton";
 import Popup from "./Popup";
 import { X } from "lucide-react";
+import { Send } from "lucide-react";
 
 // 🟩 InputField outside main component
 const InputField = ({ label, name, type = 'text', placeholder, icon: Icon, required = false, options = null, value, onChange, error }) => (
@@ -71,57 +72,81 @@ const TextAreaField = ({ label, name, placeholder, required = false, value, onCh
 );
 
 // 🟩 OTP Field
-const PhoneOtpField = ({ otp, setOtp, otpVerified, otpSent, sendOtpToPhone, verifyOtp, resendTimer }) => (
-    <div className="space-y-2">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Verify Phone Number <span className="text-red-500">*</span>
-        </label>
-        {!otpVerified ? (
-            <div className="grid grid-cols-3 gap-4">
-                <input
-                    type="text"
-                    className="col-span-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3BB5FF]"
-                    placeholder="Enter OTP"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                />
-                <button
-                    onClick={verifyOtp}
-                    className="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition"
-                >
-                    Verify
-                </button>
-            </div>
-        ) : (
-            <div className="text-green-600 font-semibold">✅ Phone Verified</div>
-        )}
-        {!otpSent && (
-            resendTimer > 0 ? (
-                <p className="text-sm text-gray-500 mt-1">
-                    Resend OTP in <span className="font-semibold text-[#3BB5FF]">{resendTimer}</span> seconds
-                </p>
-            ) : (
-                <button
-                    type="button"
-                    onClick={sendOtpToPhone}
-                    className="text-[#3BB5FF] flex items-center text-sm mt-1 hover:underline"
-                >
-                    <Send className="w-4 h-4 mr-1" /> Send OTP to Phone
-                </button>
-            )
-        )}
-    </div>
-);
+const EmailOtpField = ({
+  email,
+  setEmail,
+  otp,
+  setOtp,
+  otpVerified,
+  otpSent,
+  sendOtpToEmail,
+  verifyOtp,
+  resendTimer
+}) => (
+  <div className="space-y-2">
+    <label className="block text-sm font-semibold text-gray-700 mb-2">
+      Verify Email <span className="text-red-500">*</span>
+    </label>
 
+    {!otpVerified ? (
+      <>
+        {/* Email input */}
+        <input
+          type="email"
+          className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3BB5FF]"
+          placeholder="your@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        {/* OTP input + verify button */}
+        {otpSent && (
+          <div className="grid grid-cols-3 gap-4 mt-2">
+            <input
+              type="text"
+              className="col-span-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3BB5FF]"
+              placeholder="Enter OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+            />
+            <button
+              onClick={verifyOtp}
+              className="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition"
+            >
+              Verify
+            </button>
+          </div>
+        )}
+      </>
+    ) : (
+      <div className="text-green-600 font-semibold">✅ Email Verified</div>
+    )}
+
+    {/* Send / Resend OTP */}
+    {!otpSent ? (
+      resendTimer > 0 ? (
+        <p className="text-sm text-gray-500 mt-1">
+          Resend OTP in{" "}
+          <span className="font-semibold text-[#3BB5FF]">{resendTimer}</span> seconds
+        </p>
+      ) : (
+        <button
+          type="button"
+          onClick={sendOtpToEmail}
+          className="text-[#3BB5FF] flex items-center text-sm mt-1 hover:underline"
+        >
+          <Send className="w-4 h-4 mr-1" /> Send OTP to Email
+        </button>
+      )
+    ) : null}
+  </div>
+);
 
 const VendorRegistration = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [hasPaid, setHasPaid] = useState(false); // ✅ Payment confirmation state
-    const [otpSent, setOtpSent] = useState(false);
-    const [otp, setOtp] = useState('');
-    const [otpVerified, setOtpVerified] = useState(false);
     const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
@@ -134,6 +159,8 @@ const VendorRegistration = () => {
     const mapLinkRegex = /^https:\/\/(www\.)?google\.[a-z]+\/maps\?q=(-?\d+(\.\d+)?),(-?\d+(\.\d+)?)$/;
     const [popup, setPopup] = useState({ message: '', type: 'info', visible: false });
     const [tooltipVisible, setTooltipVisible] = useState(true);
+    const [pendingVerification, setPendingVerification] = useState(false);
+    const [otpCode, setOtpCode] = useState("");
 
 
     const [formData, setFormData] = useState({
@@ -176,51 +203,42 @@ const VendorRegistration = () => {
             }));
         }
     };
-    const sendOtpToPhone = async () => {
-        if (resendTimer > 0) return;
+
+    const sendVerificationEmail = async () => {
+        if (!isLoaded) return;
+
         try {
-            await signUp.create({ phoneNumber: formData.phone });
-            await signUp.preparePhoneNumberVerification();
-            showPopupMessage("OTP sent to your phone.");
-            setOtpSent(true);
-            startResendTimer();
-        } catch (error) {
-            console.error("Clerk OTP send error:", error);
-            showPopupMessage("OTP sending failed. Please check your phone number.");
-        }
-    };
-
-
-    const verifyOtp = async () => {
-        try {
-            const result = await signUp.attemptPhoneNumberVerification({ code: otp });
-            if (result.status === "complete") {
-                await setActive({ session: result.createdSessionId });
-                setOtpVerified(true);
-                showPopupMessage("Phone verified successfully!");
-            } else {
-                showPopupMessage("OTP verification incomplete.");
-            }
-        } catch (error) {
-            console.error("Clerk OTP verification error:", error);
-            showPopupMessage("Invalid OTP. Please try again.");
-        }
-    };
-
-    const startResendTimer = () => {
-        setResendTimer(60);
-
-        const interval = setInterval(() => {
-            setResendTimer(prev => {
-                if (prev <= 1) {
-                    clearInterval(interval);
-                    return 0;
-                }
-                return prev - 1;
+            // 1. Create a sign-up with email
+            await signUp.create({
+                emailAddress: formData.email,
             });
-        }, 1000);
 
-        setTimerIntervalId(interval);
+            // 2. Send verification email
+            await signUp.prepareEmailAddressVerification({
+                strategy: "email_code",
+            });
+
+            setPendingVerification(true);
+        } catch (err) {
+            console.error("Error sending verification email:", err);
+        }
+    };
+
+    const verifyEmailCode = async () => {
+        if (!isLoaded) return;
+
+        try {
+            const completeSignUp = await signUp.attemptEmailAddressVerification({
+                code: otpCode,
+            });
+
+            if (completeSignUp.status === "complete") {
+                await setActive({ session: completeSignUp.createdSessionId });
+                alert("Email verified successfully!");
+            }
+        } catch (err) {
+            console.error("Invalid code:", err);
+        }
     };
 
 
@@ -563,17 +581,34 @@ const VendorRegistration = () => {
                                         error={errors.contactPerson}
                                         required
                                     />
-                                    <InputField
-                                        label="Email"
-                                        name="email"
-                                        type="email"
-                                        placeholder="your@email.com"
-                                        icon={Mail}
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        error={errors.email}
-                                        required
-                                    />
+                                    {!pendingVerification ? (
+                                        <>
+                                            <InputField
+                                                label="Email"
+                                                name="email"
+                                                type="email"
+                                                placeholder="your@email.com"
+                                                icon={Mail}
+                                                value={formData.email}
+                                                onChange={handleInputChange}
+                                                required
+                                            />
+                                            <button onClick={sendVerificationEmail}>Verify Email</button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <InputField
+                                                label="Enter OTP"
+                                                name="otp"
+                                                type="text"
+                                                placeholder="123456"
+                                                value={otpCode}
+                                                onChange={(e) => setOtpCode(e.target.value)}
+                                                required
+                                            />
+                                            <button onClick={verifyEmailCode}>Submit Code</button>
+                                        </>
+                                    )}
                                     <InputField
                                         label="Phone Number"
                                         name="phone"
@@ -585,16 +620,6 @@ const VendorRegistration = () => {
                                         error={errors.phone}
                                         required
                                     />
-                                    <PhoneOtpField
-                                        otp={otp}
-                                        setOtp={setOtp}
-                                        otpVerified={otpVerified}
-                                        otpSent={otpSent}
-                                        sendOtpToPhone={sendOtpToPhone}
-                                        verifyOtp={verifyOtp}
-                                        resendTimer={resendTimer}
-                                    />
-
                                     <InputField
                                         label="Street Address"
                                         name="streetAddress"
@@ -828,7 +853,7 @@ const VendorRegistration = () => {
                         <Link to="/terms" className="hover:underline">Terms</Link>
                         <Link to="/refund" className="hover:underline">Refund</Link>
                         <Link to="/contact" className="hover:underline">ContactUs</Link>
-                      </div>
+                    </div>
                 </div>
             </footer>
             {showConfirmation && (
