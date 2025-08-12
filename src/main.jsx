@@ -14,7 +14,7 @@ if (!PUBLISHABLE_KEY) {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <ClerkProvider
-    publishableKey={<ClerkProvider publishableKey={import.meta.env.VITE_CLERK_KEY}>};
+    publishableKey={import.meta.env.VITE_CLERK_KEY}
     navigate={(to) => window.history.pushState(null, '', to)}
     fallbackRedirectUrl="/dashboard"
   >
