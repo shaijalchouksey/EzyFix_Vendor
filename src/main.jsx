@@ -6,15 +6,15 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import { BrowserRouter } from 'react-router-dom';
 
 // ✅ Correct way to import environment variable
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_KEY;
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE;
 
 if (!PUBLISHABLE_KEY) {
-  throw new Error("Missing Clerk Key in .env");
+  throw new Error("Missing Clerk Publishable Key in .env");
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <ClerkProvider
-    publishableKey={import.meta.env.VITE_CLERK_KEY}
+    publishableKey={PUBLISHABLE_KEY}
     navigate={(to) => window.history.pushState(null, '', to)}
     fallbackRedirectUrl="/dashboard"
   >
