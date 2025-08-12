@@ -151,7 +151,7 @@ const VendorRegistration = () => {
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
     const [timerIntervalId, setTimerIntervalId] = useState(null);
-    const { signUp, setActive } = useSignUp();
+    const { isLoaded, signUp, setActive } = useSignUp();
     const [errorMessage, setErrorMessage] = useState("");
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
