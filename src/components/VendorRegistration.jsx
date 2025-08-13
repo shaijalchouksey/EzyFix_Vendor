@@ -4,7 +4,7 @@ import { useSignUp, useAuth } from "@clerk/clerk-react";
 import { Link, useNavigate } from 'react-router-dom';
 import RazorpayButton from "./RazorpayHostedButton";
 import Popup from "./Popup";
-import { X } from "lucide-react";
+import { X, Send  } from "lucide-react";
 
 // 🟩 InputField outside main component
 const InputField = ({ label, name, type = 'text', placeholder, icon: Icon, required = false, options = null, value, onChange, error }) => (
@@ -70,60 +70,81 @@ const TextAreaField = ({ label, name, placeholder, required = false, value, onCh
     </div>
 );
 
-// 🟩 OTP Field
 // 🟦 Email OTP Field
+import { Send } from "lucide-react";
+
 const EmailOtpField = ({
-    otp,
-    setOtp,
-    otpVerified,
-    otpSent,
-    sendOtpToEmail,
-    verifyEmailOtp,
-    resendTimer
+  otp,
+  setOtp,
+  otpVerified,
+  otpSent,
+  sendOtpToEmail,
+  verifyEmailOtp,
+  resendTimer
 }) => (
-    <div className="space-y-2">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Verify Email Address <span className="text-red-500">*</span>
-        </label>
+  <div className="space-y-2">
+    <label className="block text-sm font-semibold text-gray-700 mb-2">
+      Verify Email Address <span className="text-red-500">*</span>
+    </label>
 
-        {!otpVerified ? (
-            <div className="grid grid-cols-3 gap-4">
-                <input
-                    type="text"
-                    className="col-span-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3BB5FF]"
-                    placeholder="Enter OTP"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                />
-                <button
-                    onClick={verifyEmailOtp}
-                    className="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition"
-                >
-                    Verify
-                </button>
-            </div>
+    {!otpVerified ? (
+      <div className="grid grid-cols-3 gap-4">
+        <input
+          type="text"
+          className="col-span-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3BB5FF]"
+          placeholder="Enter OTP"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
+        />
+        <button
+          onClick={verifyEmailOtp}
+          className="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition"
+        >
+          Verify
+        </button>
+      </div>
+    ) : (
+      <div className="text-green-600 font-semibold">
+        ✅ Email Successfully Verified
+      </div>
+    )}
+
+    {/* Send OTP Button */}
+    {!otpSent && !otpVerified && (
+      <button
+        type="button"
+        onClick={sendOtpToEmail}
+        className="text-[#3BB5FF] flex items-center text-sm mt-1 hover:underline"
+      >
+        <Send className="w-4 h-4 mr-1" /> Send OTP to Email
+      </button>
+    )}
+
+    {/* Resend OTP Timer */}
+    {otpSent && !otpVerified && (
+      <div>
+        {resendTimer > 0 ? (
+          <p className="text-sm text-gray-500 mt-1">
+            Resend OTP in{" "}
+            <span className="font-semibold text-[#3BB5FF]">
+              {resendTimer}
+            </span>{" "}
+            seconds
+          </p>
         ) : (
-            <div className="text-green-600 font-semibold">Email Successfully Verified</div>
+          <button
+            type="button"
+            onClick={sendOtpToEmail}
+            className="text-[#3BB5FF] flex items-center text-sm mt-1 hover:underline"
+          >
+            <Send className="w-4 h-4 mr-1" /> Resend OTP
+          </button>
         )}
-
-        {!otpSent &&
-            (resendTimer > 0 ? (
-                <p className="text-sm text-gray-500 mt-1">
-                    Resend OTP in{" "}
-                    <span className="font-semibold text-[#3BB5FF]">{resendTimer}</span>{" "}
-                    seconds
-                </p>
-            ) : (
-                <button
-                    type="button"
-                    onClick={sendOtpToEmail}
-                    className="text-[#3BB5FF] flex items-center text-sm mt-1 hover:underline"
-                >
-                    <Send className="w-4 h-4 mr-1" /> Send OTP to Email
-                </button>
-            ))}
-    </div>
+      </div>
+    )}
+  </div>
 );
+
 
 
 
@@ -132,9 +153,6 @@ const VendorRegistration = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [hasPaid, setHasPaid] = useState(false); // ✅ Payment confirmation state
-    const [otpSent, setOtpSent] = useState(false);
-    const [otp, setOtp] = useState('');
-    const [otpVerified, setOtpVerified] = useState(false);
     const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
@@ -148,6 +166,9 @@ const VendorRegistration = () => {
     const [tooltipVisible, setTooltipVisible] = useState(true);
     const { signUp, isLoaded } = useSignUp();
     const { setActive } = useAuth();
+    const [otpSent, setOtpSent] = useState(false);
+    const [otp, setOtp] = useState("");
+    const [otpVerified, setOtpVerified] = useState(false);
 
     if (!isLoaded) return null;
     const [formData, setFormData] = useState({
@@ -200,7 +221,9 @@ const VendorRegistration = () => {
 
       try {
         await signUp.create({ emailAddress: formData.email });
-        await signUp.prepareEmailAddressVerification();
+        await signUp.prepareEmailAddressVerification({
+          strategy: "email_code"
+            });
         showPopupMessage("OTP sent to your email.");
         setOtpSent(true);
         startResendTimer();
@@ -213,20 +236,24 @@ const VendorRegistration = () => {
 
     // Verify OTP from email using Clerk
     const verifyEmailOtp = async () => {
-        try {
-            const result = await signUp.attemptEmailAddressVerification({ code: otp });
-            if (result.status === "complete") {
-                await setActive({ session: result.createdSessionId });
-                setOtpVerified(true);
-                showPopupMessage("Email verified successfully!");
-            } else {
-                showPopupMessage("OTP verification incomplete.");
-            }
-        } catch (error) {
-            console.error("Clerk Email OTP verification error:", error);
-            showPopupMessage("Invalid OTP. Please try again.");
-        }
-    };
+  try {
+    const result = await signUp.attemptEmailAddressVerification({
+      code: otp
+    });
+
+    if (result.status === "complete") {
+      await setActive({ session: result.createdSessionId }); // User ko login karo
+      setOtpVerified(true);
+      showPopupMessage("Email verified successfully!");
+    } else {
+      showPopupMessage("OTP verification incomplete.");
+    }
+  } catch (error) {
+    console.error("Clerk Email OTP verification error:", error);
+    showPopupMessage("Invalid OTP. Please try again.");
+  }
+};
+
 
     // Resend timer function (same as before)
     const startResendTimer = () => {
