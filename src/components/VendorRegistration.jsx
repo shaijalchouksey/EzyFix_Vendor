@@ -69,8 +69,6 @@ const TextAreaField = ({ label, name, placeholder, required = false, value, onCh
 );
 
 // 🟦 Email OTP Field
-import { Send } from "lucide-react";
-
 const EmailOtpField = ({
   otp,
   setOtp,
