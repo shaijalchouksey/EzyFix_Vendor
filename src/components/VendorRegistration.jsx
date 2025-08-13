@@ -71,11 +71,21 @@ const TextAreaField = ({ label, name, placeholder, required = false, value, onCh
 );
 
 // 🟩 OTP Field
-const PhoneOtpField = ({ otp, setOtp, otpVerified, otpSent, sendOtpToPhone, verifyOtp, resendTimer }) => (
+// 🟦 Email OTP Field
+const EmailOtpField = ({
+    otp,
+    setOtp,
+    otpVerified,
+    otpSent,
+    sendOtpToEmail,
+    verifyEmailOtp,
+    resendTimer
+}) => (
     <div className="space-y-2">
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Verify Phone Number <span className="text-red-500">*</span>
+            Verify Email Address <span className="text-red-500">*</span>
         </label>
+
         {!otpVerified ? (
             <div className="grid grid-cols-3 gap-4">
                 <input
@@ -86,32 +96,35 @@ const PhoneOtpField = ({ otp, setOtp, otpVerified, otpSent, sendOtpToPhone, veri
                     onChange={(e) => setOtp(e.target.value)}
                 />
                 <button
-                    onClick={verifyOtp}
+                    onClick={verifyEmailOtp}
                     className="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition"
                 >
                     Verify
                 </button>
             </div>
         ) : (
-            <div className="text-green-600 font-semibold">✅ Phone Verified</div>
+            <div className="text-green-600 font-semibold">Email Successfully Verified</div>
         )}
-        {!otpSent && (
-            resendTimer > 0 ? (
+
+        {!otpSent &&
+            (resendTimer > 0 ? (
                 <p className="text-sm text-gray-500 mt-1">
-                    Resend OTP in <span className="font-semibold text-[#3BB5FF]">{resendTimer}</span> seconds
+                    Resend OTP in{" "}
+                    <span className="font-semibold text-[#3BB5FF]">{resendTimer}</span>{" "}
+                    seconds
                 </p>
             ) : (
                 <button
                     type="button"
-                    onClick={sendOtpToPhone}
+                    onClick={sendOtpToEmail}
                     className="text-[#3BB5FF] flex items-center text-sm mt-1 hover:underline"
                 >
-                    <Send className="w-4 h-4 mr-1" /> Send OTP to Phone
+                    <Send className="w-4 h-4 mr-1" /> Send OTP to Email
                 </button>
-            )
-        )}
+            ))}
     </div>
 );
+
 
 
 const VendorRegistration = () => {
@@ -176,40 +189,41 @@ const VendorRegistration = () => {
             }));
         }
     };
-    const sendOtpToPhone = async () => {
+    // Send OTP to email using Clerk
+    const sendOtpToEmail = async () => {
         if (resendTimer > 0) return;
         try {
-            await signUp.create({ phoneNumber: formData.phone });
-            await signUp.preparePhoneNumberVerification();
-            showPopupMessage("OTP sent to your phone.");
+            await signUp.create({ emailAddress: formData.email });
+            await signUp.prepareEmailAddressVerification();
+            showPopupMessage("OTP sent to your email.");
             setOtpSent(true);
             startResendTimer();
         } catch (error) {
-            console.error("Clerk OTP send error:", error);
-            showPopupMessage("OTP sending failed. Please check your phone number.");
+            console.error("Clerk Email OTP send error:", error);
+            showPopupMessage("OTP sending failed. Please check your email address.");
         }
     };
 
-
-    const verifyOtp = async () => {
+    // Verify OTP from email using Clerk
+    const verifyEmailOtp = async () => {
         try {
-            const result = await signUp.attemptPhoneNumberVerification({ code: otp });
+            const result = await signUp.attemptEmailAddressVerification({ code: otp });
             if (result.status === "complete") {
                 await setActive({ session: result.createdSessionId });
                 setOtpVerified(true);
-                showPopupMessage("Phone verified successfully!");
+                showPopupMessage("Email verified successfully!");
             } else {
                 showPopupMessage("OTP verification incomplete.");
             }
         } catch (error) {
-            console.error("Clerk OTP verification error:", error);
+            console.error("Clerk Email OTP verification error:", error);
             showPopupMessage("Invalid OTP. Please try again.");
         }
     };
 
+    // Resend timer function (same as before)
     const startResendTimer = () => {
         setResendTimer(60);
-
         const interval = setInterval(() => {
             setResendTimer(prev => {
                 if (prev <= 1) {
@@ -219,9 +233,9 @@ const VendorRegistration = () => {
                 return prev - 1;
             });
         }, 1000);
-
         setTimerIntervalId(interval);
     };
+
 
 
     const validateStep = (step) => {
@@ -564,17 +578,6 @@ const VendorRegistration = () => {
                                         required
                                     />
                                     <InputField
-                                        label="Email"
-                                        name="email"
-                                        type="email"
-                                        placeholder="your@email.com"
-                                        icon={Mail}
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        error={errors.email}
-                                        required
-                                    />
-                                    <InputField
                                         label="Phone Number"
                                         name="phone"
                                         type="tel"
@@ -585,13 +588,25 @@ const VendorRegistration = () => {
                                         error={errors.phone}
                                         required
                                     />
-                                    <PhoneOtpField
+                                    <InputField
+                                        label="Email"
+                                        name="email"
+                                        type="email"
+                                        placeholder="your@email.com"
+                                        icon={Mail}
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                        error={errors.email}
+                                        required
+                                    />
+
+                                    <EmailOtpField
                                         otp={otp}
                                         setOtp={setOtp}
                                         otpVerified={otpVerified}
                                         otpSent={otpSent}
-                                        sendOtpToPhone={sendOtpToPhone}
-                                        verifyOtp={verifyOtp}
+                                        sendOtpToEmail={sendOtpToEmail}
+                                        verifyEmailOtp={verifyEmailOtp} // ✅ Clerk email verification function
                                         resendTimer={resendTimer}
                                     />
 
@@ -828,7 +843,7 @@ const VendorRegistration = () => {
                         <Link to="/terms" className="hover:underline">Terms</Link>
                         <Link to="/refund" className="hover:underline">Refund</Link>
                         <Link to="/contact" className="hover:underline">ContactUs</Link>
-                      </div>
+                    </div>
                 </div>
             </footer>
             {showConfirmation && (
