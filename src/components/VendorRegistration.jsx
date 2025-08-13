@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { User, Mail, Phone, MapPin, Building2, Lock, Eye, EyeOff, Star, Sparkles, Gift, TrendingUp, CheckCircle, AlertCircle, Send } from 'lucide-react';
-import { useSignUp } from '@clerk/clerk-react';
+import { useSignUp, useAuth } from "@clerk/clerk-react";
 import { Link, useNavigate } from 'react-router-dom';
 import RazorpayButton from "./RazorpayHostedButton";
 import Popup from "./Popup";
@@ -139,7 +139,6 @@ const VendorRegistration = () => {
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
     const [timerIntervalId, setTimerIntervalId] = useState(null);
-    const { signUp, setActive } = useSignUp();
     const [errorMessage, setErrorMessage] = useState("");
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
@@ -147,8 +146,10 @@ const VendorRegistration = () => {
     const mapLinkRegex = /^https:\/\/(www\.)?google\.[a-z]+\/maps\?q=(-?\d+(\.\d+)?),(-?\d+(\.\d+)?)$/;
     const [popup, setPopup] = useState({ message: '', type: 'info', visible: false });
     const [tooltipVisible, setTooltipVisible] = useState(true);
+    const { signUp, isLoaded } = useSignUp();
+    const { setActive } = useAuth();
 
-
+    if (!isLoaded) return null;
     const [formData, setFormData] = useState({
         businessName: '',
         businessType: '',
@@ -189,20 +190,26 @@ const VendorRegistration = () => {
             }));
         }
     };
-    // Send OTP to email using Clerk
+
     const sendOtpToEmail = async () => {
-        if (resendTimer > 0) return;
-        try {
-            await signUp.create({ emailAddress: formData.email });
-            await signUp.prepareEmailAddressVerification();
-            showPopupMessage("OTP sent to your email.");
-            setOtpSent(true);
-            startResendTimer();
-        } catch (error) {
-            console.error("Clerk Email OTP send error:", error);
-            showPopupMessage("OTP sending failed. Please check your email address.");
-        }
+      if (!signUp) {
+        console.error("Clerk signUp is not loaded yet");
+        return;
+      }
+      if (resendTimer > 0) return;
+
+      try {
+        await signUp.create({ emailAddress: formData.email });
+        await signUp.prepareEmailAddressVerification();
+        showPopupMessage("OTP sent to your email.");
+        setOtpSent(true);
+        startResendTimer();
+      } catch (error) {
+        console.error("Clerk Email OTP send error:", error);
+        showPopupMessage("OTP sending failed. Please check your email address.");
+      }
     };
+
 
     // Verify OTP from email using Clerk
     const verifyEmailOtp = async () => {
