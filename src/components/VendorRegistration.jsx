@@ -208,8 +208,6 @@ const VendorRegistration = () => {
       Timer Example
     </div>
   );
-}
-
 
     const showPopupMessage = (message, type = 'info', duration = 4000) => {
         setPopup({ message, type, visible: true });
