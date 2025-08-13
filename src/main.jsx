@@ -11,7 +11,10 @@ if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Clerk Publishable Key in .env");
 }
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
+  <ClerkProvider
+  publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
+  frontendApi="clerk.ezyfix.in"
+>
     <BrowserRouter>
       <App />
     </BrowserRouter>
