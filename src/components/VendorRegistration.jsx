@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, User, Mail, Phone, MapPin, Building2, Lock, Eye, EyeOff, Star, Sparkles, Gift, TrendingUp, CheckCircle, AlertCircle, Send } from 'lucide-react';
-import { useSignUp } from '@clerk/clerk-react';
+import { useSignUp, useAuth } from '@clerk/clerk-react';
 import { Link, useNavigate } from 'react-router-dom';
 import RazorpayButton from "./RazorpayHostedButton";
 import Popup from "./Popup";
