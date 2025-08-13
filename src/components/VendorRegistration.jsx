@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { User, Mail, Phone, MapPin, Building2, Lock, Eye, EyeOff, Star, Sparkles, Gift, TrendingUp, CheckCircle, AlertCircle, Send } from 'lucide-react';
-import { useSignUp, useAuth } from "@clerk/clerk-react";
+import { X, User, Mail, Phone, MapPin, Building2, Lock, Eye, EyeOff, Star, Sparkles, Gift, TrendingUp, CheckCircle, AlertCircle, Send } from 'lucide-react';
+import { useSignUp } from '@clerk/clerk-react';
 import { Link, useNavigate } from 'react-router-dom';
 import RazorpayButton from "./RazorpayHostedButton";
 import Popup from "./Popup";
-import { X } from "lucide-react";
 
-// 🟩 InputField outside main component
 const InputField = ({ label, name, type = 'text', placeholder, icon: Icon, required = false, options = null, value, onChange, error }) => (
     <div className="space-y-2">
         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -105,7 +103,7 @@ const EmailOtpField = ({
       </div>
     ) : (
       <div className="text-green-600 font-semibold">
-        ✅ Email Successfully Verified
+        Email Successfully Verified
       </div>
     )}
 
