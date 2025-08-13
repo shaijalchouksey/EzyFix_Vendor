@@ -1,18 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, User, Mail, Phone, MapPin, Building2, Lock, Eye, EyeOff, Star, Sparkles, Gift, TrendingUp, CheckCircle, AlertCircle, Send } from 'lucide-react';
 import { useSignUp, useAuth } from '@clerk/clerk-react';
 import { Link, useNavigate } from 'react-router-dom';
 import RazorpayButton from "./RazorpayHostedButton";
 import Popup from "./Popup";
 
-// ...inside component
-useEffect(() => {
-  return () => {
-    if (timerIntervalId) {
-      clearInterval(timerIntervalId);
-    }
-  };
-}, [timerIntervalId]);
 
 const InputField = ({ label, name, type = 'text', placeholder, icon: Icon, required = false, options = null, value, onChange, error }) => (
     <div className="space-y-2">
@@ -196,6 +188,23 @@ const VendorRegistration = () => {
         username: '',
         password: ''
     });
+
+  const timerIntervalId = useRef(null);
+
+  useEffect(() => {
+    timerIntervalId.current = setInterval(() => {
+      console.log("Tick");
+    }, 1000);
+
+    return () => {
+      if (timerIntervalId.current) {
+        clearInterval(timerIntervalId.current);
+      }
+    };
+  }, []); // empty array => sirf mount/unmount pe chalega
+
+  return <div>Timer Example</div>;
+}
 
     const showPopupMessage = (message, type = 'info', duration = 4000) => {
         setPopup({ message, type, visible: true });
