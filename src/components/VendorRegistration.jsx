@@ -189,8 +189,6 @@ const VendorRegistration = () => {
         password: ''
     });
 
-  const timerIntervalId = useRef(null);
-
   useEffect(() => {
     timerIntervalId.current = setInterval(() => {
       console.log("Tick");
