@@ -5,6 +5,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import RazorpayButton from "./RazorpayHostedButton";
 import Popup from "./Popup";
 
+// ...inside component
+useEffect(() => {
+  return () => {
+    if (timerIntervalId) {
+      clearInterval(timerIntervalId);
+    }
+  };
+}, [timerIntervalId]);
+
 const InputField = ({ label, name, type = 'text', placeholder, icon: Icon, required = false, options = null, value, onChange, error }) => (
     <div className="space-y-2">
         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -67,7 +76,6 @@ const TextAreaField = ({ label, name, placeholder, required = false, value, onCh
         )}
     </div>
 );
-
 // 🟦 Email OTP Field
 const EmailOtpField = ({
   otp,
@@ -76,73 +84,77 @@ const EmailOtpField = ({
   otpSent,
   sendOtpToEmail,
   verifyEmailOtp,
-  resendTimer
-}) => (
-  <div className="space-y-2">
-    <label className="block text-sm font-semibold text-gray-700 mb-2">
-      Verify Email Address <span className="text-red-500">*</span>
-    </label>
+  resendTimer,
+  sending = false,
+  verifying = false,
+  email = ""
+}) => {
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || "");
 
-    {!otpVerified ? (
-      <div className="grid grid-cols-3 gap-4">
-        <input
-          type="text"
-          className="col-span-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3BB5FF]"
-          placeholder="Enter OTP"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-        />
-        <button
-          onClick={verifyEmailOtp}
-          className="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition"
-        >
-          Verify
-        </button>
-      </div>
-    ) : (
-      <div className="text-green-600 font-semibold">
-        Email Successfully Verified
-      </div>
-    )}
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm font-semibold text-gray-700 mb-2">
+        Verify Email Address <span className="text-red-500">*</span>
+      </label>
 
-    {/* Send OTP Button */}
-    {!otpSent && !otpVerified && (
-      <button
-        type="button"
-        onClick={sendOtpToEmail}
-        className="text-[#3BB5FF] flex items-center text-sm mt-1 hover:underline"
-      >
-        <Send className="w-4 h-4 mr-1" /> Send OTP to Email
-      </button>
-    )}
-
-    {/* Resend OTP Timer */}
-    {otpSent && !otpVerified && (
-      <div>
-        {resendTimer > 0 ? (
-          <p className="text-sm text-gray-500 mt-1">
-            Resend OTP in{" "}
-            <span className="font-semibold text-[#3BB5FF]">
-              {resendTimer}
-            </span>{" "}
-            seconds
-          </p>
-        ) : (
+      {!otpVerified ? (
+        <div className="grid grid-cols-3 gap-4">
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={6}
+            className="col-span-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3BB5FF]"
+            placeholder="Enter OTP"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            disabled={!otpSent || verifying}
+          />
           <button
-            type="button"
-            onClick={sendOtpToEmail}
-            className="text-[#3BB5FF] flex items-center text-sm mt-1 hover:underline"
+            onClick={verifyEmailOtp}
+            disabled={!otpSent || otp.length < 4 || verifying}
+            className={`bg-green-500 text-white px-4 py-3 rounded-lg transition hover:bg-green-600 disabled:opacity-50`}
           >
-            <Send className="w-4 h-4 mr-1" /> Resend OTP
+            {verifying ? "Verifying..." : "Verify"}
           </button>
-        )}
-      </div>
-    )}
-  </div>
-);
+        </div>
+      ) : (
+        <div className="text-green-600 font-semibold">✅ Email Successfully Verified</div>
+      )}
 
-
-
+      {/* Send / Resend */}
+      {!otpVerified && (
+        <div className="mt-1">
+          {!otpSent ? (
+            <button
+              type="button"
+              onClick={sendOtpToEmail}
+              disabled={!isEmailValid || sending}
+              className="text-[#3BB5FF] flex items-center text-sm hover:underline disabled:opacity-50"
+              title={!isEmailValid ? "Enter a valid email first" : ""}
+            >
+              <Send className="w-4 h-4 mr-1" />
+              {sending ? "Sending..." : "Send OTP to Email"}
+            </button>
+          ) : resendTimer > 0 ? (
+            <p className="text-sm text-gray-500">
+              Resend OTP in <span className="font-semibold text-[#3BB5FF]">{resendTimer}</span> seconds
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={sendOtpToEmail}
+              disabled={sending}
+              className="text-[#3BB5FF] flex items-center text-sm hover:underline"
+            >
+              <Send className="w-4 h-4 mr-1" />
+              {sending ? "Sending..." : "Resend OTP"}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const VendorRegistration = () => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -165,6 +177,8 @@ const VendorRegistration = () => {
     const [otpSent, setOtpSent] = useState(false);
     const [otp, setOtp] = useState("");
     const [otpVerified, setOtpVerified] = useState(false);
+    const [sendingOtp, setSendingOtp] = useState(false);
+    const [verifyingOtp, setVerifyingOtp] = useState(false);
 
     if (!isLoaded) return null;
     const [formData, setFormData] = useState({
@@ -208,64 +222,91 @@ const VendorRegistration = () => {
         }
     };
 
-    const sendOtpToEmail = async () => {
-      if (!signUp) {
-        console.error("Clerk signUp is not loaded yet");
-        return;
-      }
-      if (resendTimer > 0) return;
+    // Send OTP with Clerk (email_code)
+const sendOtpToEmail = async () => {
+  if (!isLoaded || !signUp) return;          // Clerk not ready
+  if (resendTimer > 0 || sendingOtp) return; // rate-limit
+  if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    showPopupMessage("Please enter a valid email address.", "error");
+    return;
+  }
 
-      try {
-        await signUp.create({ emailAddress: formData.email });
-        await signUp.prepareEmailAddressVerification({
-          strategy: "email_code"
-            });
-        showPopupMessage("OTP sent to your email.");
-        setOtpSent(true);
-        startResendTimer();
-      } catch (error) {
-        console.error("Clerk Email OTP send error:", error);
-        showPopupMessage("OTP sending failed. Please check your email address.");
-      }
-    };
-
-
-    // Verify OTP from email using Clerk
-    const verifyEmailOtp = async () => {
   try {
-    const result = await signUp.attemptEmailAddressVerification({
-      code: otp
+    setSendingOtp(true);
+
+    // IMPORTANT:
+    // If you plan to log user in right after OTP verify (passwordless),
+    // you can omit password here. If you need password-based account,
+    // you can also set password now OR later via signUp.update({ password }).
+    await signUp.create({ emailAddress: formData.email });
+
+    await signUp.prepareEmailAddressVerification({
+      strategy: "email_code",
     });
 
-    if (result.status === "complete") {
-      await setActive({ session: result.createdSessionId }); // User ko login karo
-      setOtpVerified(true);
-      showPopupMessage("Email verified successfully!");
-    } else {
-      showPopupMessage("OTP verification incomplete.");
-    }
+    setOtpSent(true);
+    showPopupMessage("OTP sent to your email.", "success");
+    startResendTimer();
   } catch (error) {
-    console.error("Clerk Email OTP verification error:", error);
-    showPopupMessage("Invalid OTP. Please try again.");
+    console.error("Clerk Email OTP send error:", error);
+    // Show cleaner messages
+    const msg =
+      error?.errors?.[0]?.longMessage ||
+      error?.errors?.[0]?.message ||
+      "OTP sending failed. Please check your email address.";
+    showPopupMessage(msg, "error");
+  } finally {
+    setSendingOtp(false);
   }
 };
 
+// Verify OTP with Clerk
+const verifyEmailOtp = async () => {
+  if (!isLoaded || !signUp) return;
+  if (!otp || verifyingOtp) return;
 
-    // Resend timer function (same as before)
-    const startResendTimer = () => {
-        setResendTimer(60);
-        const interval = setInterval(() => {
-            setResendTimer(prev => {
-                if (prev <= 1) {
-                    clearInterval(interval);
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-        setTimerIntervalId(interval);
-    };
+  try {
+    setVerifyingOtp(true);
 
+    const result = await signUp.attemptEmailAddressVerification({ code: otp });
+
+    if (result.status === "complete") {
+      // If you want to force adding password after verify:
+      // if (formData.password) {
+      //   await signUp.update({ password: formData.password });
+      // }
+      await setActive({ session: result.createdSessionId }); // user signed-in
+      setOtpVerified(true);
+      showPopupMessage("Email verified successfully!", "success");
+    } else {
+      showPopupMessage("OTP verification incomplete. Please try again.", "error");
+    }
+  } catch (error) {
+    console.error("Clerk Email OTP verification error:", error);
+    const msg =
+      error?.errors?.[0]?.longMessage ||
+      error?.errors?.[0]?.message ||
+      "Invalid OTP. Please try again.";
+    showPopupMessage(msg, "error");
+  } finally {
+    setVerifyingOtp(false);
+  }
+};
+
+// Resend timer (60s)
+const startResendTimer = () => {
+  setResendTimer(60);
+  const interval = setInterval(() => {
+    setResendTimer((prev) => {
+      if (prev <= 1) {
+        clearInterval(interval);
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+  setTimerIntervalId(interval);
+};
 
 
     const validateStep = (step) => {
@@ -629,15 +670,17 @@ const VendorRegistration = () => {
                                         error={errors.email}
                                         required
                                     />
-
                                     <EmailOtpField
-                                        otp={otp}
+                                         otp={otp}
                                         setOtp={setOtp}
                                         otpVerified={otpVerified}
-                                        otpSent={otpSent}
-                                        sendOtpToEmail={sendOtpToEmail}
-                                        verifyEmailOtp={verifyEmailOtp} // ✅ Clerk email verification function
-                                        resendTimer={resendTimer}
+                                          otpSent={otpSent}
+                                      sendOtpToEmail={sendOtpToEmail}
+                                      verifyEmailOtp={verifyEmailOtp}
+                                      resendTimer={resendTimer}
+                                      sending={sendingOtp}
+                                      verifying={verifyingOtp}
+                                      email={formData.email}
                                     />
 
                                     <InputField
