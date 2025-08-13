@@ -4,7 +4,7 @@ import { useSignUp, useAuth } from "@clerk/clerk-react";
 import { Link, useNavigate } from 'react-router-dom';
 import RazorpayButton from "./RazorpayHostedButton";
 import Popup from "./Popup";
-import { X, Send  } from "lucide-react";
+import { X } from "lucide-react";
 
 // 🟩 InputField outside main component
 const InputField = ({ label, name, type = 'text', placeholder, icon: Icon, required = false, options = null, value, onChange, error }) => (
