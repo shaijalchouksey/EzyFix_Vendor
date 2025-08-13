@@ -201,10 +201,15 @@ const VendorRegistration = () => {
         clearInterval(timerIntervalId.current);
       }
     };
-  }, []); // empty array => sirf mount/unmount pe chalega
+  }, []);
 
-  return <div>Timer Example</div>;
+  return (
+    <div>
+      Timer Example
+    </div>
+  );
 }
+
 
     const showPopupMessage = (message, type = 'info', duration = 4000) => {
         setPopup({ message, type, visible: true });
