@@ -272,7 +272,12 @@ const VendorRegistration = () => {
 
         try {
             setVerifyingOtp(true);
-
+            await signUp.update({
+              username: formData.username,
+              password: formData.password,
+              firstName: formData.contactPerson.split(" ")[0] || formData.contactPerson,
+              lastName: formData.contactPerson.split(" ")[1] || "Vendor"
+            });
             const result = await signUp.attemptEmailAddressVerification({ code: otp });
             console.log("OTP verification result:", result); 
             if (result.status === "complete") {
