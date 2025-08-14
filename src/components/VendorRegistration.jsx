@@ -156,7 +156,6 @@ const VendorRegistration = () => {
     const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
-    const [timerIntervalId, setTimerIntervalId] = useState(null);
     const [errorMessage, setErrorMessage] = useState("");
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
