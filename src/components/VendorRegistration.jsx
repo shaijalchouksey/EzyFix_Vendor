@@ -258,39 +258,66 @@ const VendorRegistration = () => {
     }
 };
 
+// Verify OTP with Clerk
+const verifyEmailOtp = async () => {
+    if (!isLoaded || !signUp) return;
+    if (!otp || verifyingOtp) return;
 
-    // Verify OTP with Clerk
-    const verifyEmailOtp = async () => {
-        if (!isLoaded || !signUp) return;
-        if (!otp || verifyingOtp) return;
+    try {
+        setVerifyingOtp(true);
 
-        try {
-            setVerifyingOtp(true);
+        // ✅ 1. If already verified, skip calling Clerk
+        if (signUp.verifications?.emailAddress?.status === "verified") {
+            console.log("Email already verified, skipping OTP check.");
+            setOtpVerified(true);
+            showPopupMessage("Email already verified!", "success");
+            return;
+        }
 
-            const result = await signUp.attemptEmailAddressVerification({ code: otp });
+        // ✅ 2. Attempt OTP verification
+        const result = await signUp.attemptEmailAddressVerification({ code: otp });
 
-            if (result.status === "complete") {
-                // If you want to force adding password after verify:
-                // if (formData.password) {
-                //   await signUp.update({ password: formData.password });
-                // }
-                await setActive({ session: result.createdSessionId }); // user signed-in
-                setOtpVerified(true);
-                showPopupMessage("Email verified successfully!", "success");
-            } else {
+        if (result.status === "complete") {
+            // If you want to set password after verify:
+            // if (formData.password) {
+            //     await signUp.update({ password: formData.password });
+            // }
+
+            // Sign user in
+            await setActive({ session: result.createdSessionId });
+            setOtpVerified(true);
+            showPopupMessage("Email verified successfully!", "success");
+        } 
+        else {
+            // If status is "needs_new_code" or incomplete
+            if (result.verifications?.emailAddress?.status !== "verified") {
                 showPopupMessage("OTP verification incomplete. Please try again.", "error");
             }
-        } catch (error) {
-            console.error("Clerk Email OTP verification error:", error);
-            const msg =
-                error?.errors?.[0]?.longMessage ||
-                error?.errors?.[0]?.message ||
-                "Invalid OTP. Please try again.";
-            showPopupMessage(msg, "error");
-        } finally {
-            setVerifyingOtp(false);
         }
-    };
+
+    } catch (error) {
+        console.error("Clerk Email OTP verification error:", error);
+        const msg =
+            error?.errors?.[0]?.longMessage ||
+            error?.errors?.[0]?.message ||
+            "Invalid OTP. Please try again.";
+
+        // ✅ 3. If OTP was already used, restart the verification process
+        if (msg.includes("already been verified")) {
+            try {
+                await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+                showPopupMessage("Your email was already verified. Starting fresh verification.", "info");
+            } catch (prepErr) {
+                console.error("Error preparing new email verification:", prepErr);
+            }
+        } else {
+            showPopupMessage(msg, "error");
+        }
+
+    } finally {
+        setVerifyingOtp(false);
+    }
+};
 
     // Resend timer (60s)
     const startResendTimer = () => {
