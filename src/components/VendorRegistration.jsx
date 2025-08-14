@@ -187,19 +187,19 @@ const VendorRegistration = () => {
         password: ''
     });
 
-    const [timerIntervalId, setTimerIntervalId] = useState(null);
+    const timerIntervalId = useRef(null); // initialize ref
 
-    useEffect(() => {
-        timerIntervalId.current = setInterval(() => {
-            console.log("Tick");
-        }, 1000);
+  useEffect(() => {
+    timerIntervalId.current = setInterval(() => {
+      console.log("Tick");
+    }, 1000);
 
-        return () => {
-            if (timerIntervalId.current) {
-                clearInterval(timerIntervalId.current);
-            }
-        };
-    }, []);
+    return () => {
+      if (timerIntervalId.current) {
+        clearInterval(timerIntervalId.current);
+      }
+    };
+  }, []);
 
     const showPopupMessage = (message, type = 'info', duration = 4000) => {
         setPopup({ message, type, visible: true });
