@@ -227,7 +227,7 @@ const VendorRegistration = () => {
         }
     };
 
-    const sendOtpToEmail = async () => {
+   const sendOtpToEmail = async () => {
     if (!isLoaded || !signUp) return;
     if (resendTimer > 0 || sendingOtp) return;
 
@@ -239,9 +239,16 @@ const VendorRegistration = () => {
     try {
         setSendingOtp(true);
 
-        // Create only if not already created
+        // Create signUp session if not already created
         if (!signUp.id) {
             await signUp.create({ emailAddress: formData.email });
+        }
+
+        // Prevent re-sending OTP to already verified email
+        if (signUp.verifications?.emailAddress?.status === "verified") {
+            setOtpVerified(true);
+            showPopupMessage("Email is already verified.", "info");
+            return;
         }
 
         await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
@@ -276,6 +283,7 @@ const verifyEmailOtp = async () => {
         if (result.status === "complete") {
             await setActive({ session: result.createdSessionId });
             setOtpVerified(true);
+            await signUp.reload(); // Refresh state
             showPopupMessage("Email verified successfully!", "success");
         } else {
             showPopupMessage("OTP verification incomplete. Please try again.", "error");
@@ -298,7 +306,6 @@ const verifyEmailOtp = async () => {
         setVerifyingOtp(false);
     }
 };
-
 
     // Resend timer (60s)
     const startResendTimer = () => {
