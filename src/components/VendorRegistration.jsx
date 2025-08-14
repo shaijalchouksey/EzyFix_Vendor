@@ -283,10 +283,7 @@ const VendorRegistration = () => {
                 await setActive({ session: result.createdSessionId }); // user signed-in
                 setOtpVerified(true);
                 showPopupMessage("Email verified successfully!", "success");
-            } else {
-                showPopupMessage("OTP verification incomplete. Please try again.", "error");
-            }
-        } catch (error) {
+            } catch (error) {
             console.error("Clerk Email OTP verification error:", error);
             const msg =
                 error?.errors?.[0]?.longMessage ||
