@@ -269,7 +269,10 @@ const VendorRegistration = () => {
     const verifyEmailOtp = async () => {
         if (!isLoaded || !signUp) return;
         if (!otp || verifyingOtp) return;
-
+        if (!formData.username || !formData.password || !formData.contactPerson) {
+        showPopupMessage("Please fill username, password, and contact person before verifying OTP.", "error");
+        return;
+        }
         try {
             setVerifyingOtp(true);
             await signUp.update({
