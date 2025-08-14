@@ -274,7 +274,7 @@ const VendorRegistration = () => {
             setVerifyingOtp(true);
 
             const result = await signUp.attemptEmailAddressVerification({ code: otp });
-
+            console.log("OTP verification result:", result); 
             if (result.status === "complete") {
                 // If you want to force adding password after verify:
                 // if (formData.password) {
