@@ -284,7 +284,7 @@ const VendorRegistration = () => {
                 setOtpVerified(true);
                 showPopupMessage("Email verified successfully!", "success");
             } else {
-                showPopupMessage("OTP verification incomplete. Please try again.", error);
+                showPopupMessage("OTP verification incomplete. Please try again.", "error");
             }
         } catch (error) {
             console.error("Clerk Email OTP verification error:", error);
