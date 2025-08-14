@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from 'react';
 import { X, User, Mail, Phone, MapPin, Building2, Lock, Eye, EyeOff, Star, Sparkles, Gift, TrendingUp, CheckCircle, AlertCircle, Send } from 'lucide-react';
 import { useSignUp, useAuth } from '@clerk/clerk-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -265,51 +265,38 @@ const VendorRegistration = () => {
         }
     };
 
+    // Verify OTP with Clerk
     const verifyEmailOtp = async () => {
-    if (!isLoaded || !signUp) return;
-    if (!otp || verifyingOtp) return;
+        if (!isLoaded || !signUp) return;
+        if (!otp || verifyingOtp) return;
 
-    try {
-        setVerifyingOtp(true);
+        try {
+            setVerifyingOtp(true);
 
-        // Step 1: Verify OTP
-        const result = await signUp.attemptEmailAddressVerification({ code: otp });
-        console.log("OTP verification result:", result);
+            const result = await signUp.attemptEmailAddressVerification({ code: otp });
 
-        // Step 2: If Clerk says missing requirements, update the signUp instance
-        if (result.status === "missing_requirements") {
-            await signUp.update({
-                username: formData.username || formData.email.split("@")[0],
-                password: formData.password || "Temp@12345",
-                firstName: formData.contactPerson?.split(" ")[0] || "Vendor",
-                lastName: formData.contactPerson?.split(" ")[1] || "User"
-            });
+            if (result.status === "complete") {
+                // If you want to force adding password after verify:
+                // if (formData.password) {
+                //   await signUp.update({ password: formData.password });
+                // }
+                await setActive({ session: result.createdSessionId }); // user signed-in
+                setOtpVerified(true);
+                showPopupMessage("Email verified successfully!", "success");
+            } else {
+                showPopupMessage("OTP verification incomplete. Please try again.", "error");
+            }
+        } catch (error) {
+            console.error("Clerk Email OTP verification error:", error);
+            const msg =
+                error?.errors?.[0]?.longMessage ||
+                error?.errors?.[0]?.message ||
+                "Invalid OTP. Please try again.";
+            showPopupMessage(msg, "error");
+        } finally {
+            setVerifyingOtp(false);
         }
-
-        // Step 3: Refresh signUp status
-        await signUp.reload();
-
-        if (signUp.status === "complete") {
-            await setActive({ session: signUp.createdSessionId });
-            setOtpVerified(true);
-            showPopupMessage("Signup complete and email verified!", "success");
-        } else {
-            showPopupMessage("OTP verification incomplete. Please try again.", "error");
-        }
-
-    } catch (error) {
-        console.error("Clerk Email OTP verification error:", error);
-        const msg =
-            error?.errors?.[0]?.longMessage ||
-            error?.errors?.[0]?.message ||
-            "Invalid OTP. Please try again.";
-        showPopupMessage(msg, "error");
-    } finally {
-        setVerifyingOtp(false);
-    }
-};
-
-
+    };
 
     // Resend timer (60s)
     const startResendTimer = () => {
