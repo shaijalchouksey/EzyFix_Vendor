@@ -227,43 +227,37 @@ const VendorRegistration = () => {
         }
     };
 
-    // Send OTP with Clerk (email_code)
     const sendOtpToEmail = async () => {
-        if (!isLoaded || !signUp) return;          // Clerk not ready
-        if (resendTimer > 0 || sendingOtp) return; // rate-limit
-        if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            showPopupMessage("Please enter a valid email address.", "error");
-            return;
-        }
+    if (!isLoaded || !signUp) return;
+    if (resendTimer > 0 || sendingOtp) return;
 
-        try {
-            setSendingOtp(true);
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        showPopupMessage("Please enter a valid email address.", "error");
+        return;
+    }
 
-            // IMPORTANT:
-            // If you plan to log user in right after OTP verify (passwordless),
-            // you can omit password here. If you need password-based account,
-            // you can also set password now OR later via signUp.update({ password }).
+    try {
+        setSendingOtp(true);
+
+        // Create only if not already created
+        if (!signUp.id) {
             await signUp.create({ emailAddress: formData.email });
-
-            await signUp.prepareEmailAddressVerification({
-                strategy: "email_code",
-            });
-
-            setOtpSent(true);
-            showPopupMessage("OTP sent to your email.", "success");
-            startResendTimer();
-        } catch (error) {
-            console.error("Clerk Email OTP send error:", error);
-            // Show cleaner messages
-            const msg =
-                error?.errors?.[0]?.longMessage ||
-                error?.errors?.[0]?.message ||
-                "OTP sending failed. Please check your email address.";
-            showPopupMessage(msg, "error");
-        } finally {
-            setSendingOtp(false);
         }
-    };
+
+        await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+
+        setOtpSent(true);
+        showPopupMessage("OTP sent to your email.", "success");
+        startResendTimer();
+    } catch (error) {
+        console.error("Clerk Email OTP send error:", error);
+        const msg = error?.errors?.[0]?.longMessage || error?.errors?.[0]?.message || "OTP sending failed.";
+        showPopupMessage(msg, "error");
+    } finally {
+        setSendingOtp(false);
+    }
+};
+
 
     // Verify OTP with Clerk
     const verifyEmailOtp = async () => {
