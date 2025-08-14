@@ -205,7 +205,7 @@ const VendorRegistration = () => {
     const showPopupMessage = (message, type = 'info', duration = 4000) => {
         setPopup({ message, type, visible: true });
         setTimeout(() => {
-            setPopup(prev => ({ ...prev, visible: false }));  // ✅ use callback form to avoid stale value
+            setPopup(prev => ({ ...prev, visible: false })); 
         }, duration);
     };
 
@@ -226,7 +226,6 @@ const VendorRegistration = () => {
             }));
         }
     };
-
     // Send OTP with Clerk (email_code)
     const sendOtpToEmail = async () => {
         if (!isLoaded || !signUp) return;          // Clerk not ready
@@ -238,11 +237,6 @@ const VendorRegistration = () => {
 
         try {
             setSendingOtp(true);
-
-            // IMPORTANT:
-            // If you plan to log user in right after OTP verify (passwordless),
-            // you can omit password here. If you need password-based account,
-            // you can also set password now OR later via signUp.update({ password }).
             await signUp.create({ emailAddress: formData.email });
 
             await signUp.prepareEmailAddressVerification({
@@ -254,7 +248,6 @@ const VendorRegistration = () => {
             startResendTimer();
         } catch (error) {
             console.error("Clerk Email OTP send error:", error);
-            // Show cleaner messages
             const msg =
                 error?.errors?.[0]?.longMessage ||
                 error?.errors?.[0]?.message ||
@@ -265,30 +258,21 @@ const VendorRegistration = () => {
         }
     };
 
-    // Verify OTP with Clerk
     const verifyEmailOtp = async () => {
         if (!isLoaded || !signUp) return;
         if (!otp || verifyingOtp) return;
-        if (!formData.username || !formData.password || !formData.contactPerson) {
-        showPopupMessage("Please fill username, password, and contact person before verifying OTP.", "error");
-        return;
-        }
+
         try {
             setVerifyingOtp(true);
-            await signUp.update({
-              username: formData.username,
-              password: formData.password,
-              firstName: formData.contactPerson.split(" ")[0] || formData.contactPerson,
-              lastName: formData.contactPerson.split(" ")[1] || "Vendor"
-            });
+
             const result = await signUp.attemptEmailAddressVerification({ code: otp });
-            console.log("OTP verification result:", result); 
+
             if (result.status === "complete") {
                 // If you want to force adding password after verify:
                 // if (formData.password) {
                 //   await signUp.update({ password: formData.password });
                 // }
-                await setActive({ session: result.createdSessionId }); // user signed-in
+                await setActive({ session: result.createdSessionId });
                 setOtpVerified(true);
                 showPopupMessage("Email verified successfully!", "success");
             } else {
@@ -296,7 +280,7 @@ const VendorRegistration = () => {
             }
         } catch (error) {
             console.error("Clerk Email OTP verification error:", error);
-                const msg =
+            const msg =
                 error?.errors?.[0]?.longMessage ||
                 error?.errors?.[0]?.message ||
                 "Invalid OTP. Please try again.";
@@ -305,7 +289,6 @@ const VendorRegistration = () => {
             setVerifyingOtp(false);
         }
     };
-
     // Resend timer (60s)
     const startResendTimer = () => {
         setResendTimer(60);
