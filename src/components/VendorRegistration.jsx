@@ -70,82 +70,82 @@ const TextAreaField = ({ label, name, placeholder, required = false, value, onCh
 );
 // 🟦 Email OTP Field
 const EmailOtpField = ({
-  otp,
-  setOtp,
-  otpVerified,
-  otpSent,
-  sendOtpToEmail,
-  verifyEmailOtp,
-  resendTimer,
-  sending = false,
-  verifying = false,
-  email = ""
+    otp,
+    setOtp,
+    otpVerified,
+    otpSent,
+    sendOtpToEmail,
+    verifyEmailOtp,
+    resendTimer,
+    sending = false,
+    verifying = false,
+    email = ""
 }) => {
-  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || "");
+    const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || "");
 
-  return (
-    <div className="space-y-2">
-      <label className="block text-sm font-semibold text-gray-700 mb-2">
-        Verify Email Address <span className="text-red-500">*</span>
-      </label>
+    return (
+        <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Verify Email Address <span className="text-red-500">*</span>
+            </label>
 
-      {!otpVerified ? (
-        <div className="grid grid-cols-3 gap-4">
-          <input
-            type="text"
-            inputMode="numeric"
-            maxLength={6}
-            className="col-span-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3BB5FF]"
-            placeholder="Enter OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            disabled={!otpSent || verifying}
-          />
-          <button
-            onClick={verifyEmailOtp}
-            disabled={!otpSent || otp.length < 4 || verifying}
-            className={`bg-green-500 text-white px-4 py-3 rounded-lg transition hover:bg-green-600 disabled:opacity-50`}
-          >
-            {verifying ? "Verifying..." : "Verify"}
-          </button>
+            {!otpVerified ? (
+                <div className="grid grid-cols-3 gap-4">
+                    <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        className="col-span-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3BB5FF]"
+                        placeholder="Enter OTP"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        disabled={!otpSent || verifying}
+                    />
+                    <button
+                        onClick={verifyEmailOtp}
+                        disabled={!otpSent || otp.length < 4 || verifying}
+                        className={`bg-green-500 text-white px-4 py-3 rounded-lg transition hover:bg-green-600 disabled:opacity-50`}
+                    >
+                        {verifying ? "Verifying..." : "Verify"}
+                    </button>
+                </div>
+            ) : (
+                <div className="text-green-600 font-semibold">✅ Email Successfully Verified</div>
+            )}
+
+            {/* Send / Resend */}
+            {!otpVerified && (
+                <div className="mt-1">
+                    {!otpSent ? (
+                        <button
+                            type="button"
+                            onClick={sendOtpToEmail}
+                            disabled={!isEmailValid || sending}
+                            className="text-[#3BB5FF] flex items-center text-sm hover:underline disabled:opacity-50"
+                            title={!isEmailValid ? "Enter a valid email first" : ""}
+                        >
+                            <Send className="w-4 h-4 mr-1" />
+                            {sending ? "Sending..." : "Send OTP to Email"}
+                        </button>
+                    ) : resendTimer > 0 ? (
+                        <p className="text-sm text-gray-500">
+                            Resend OTP in <span className="font-semibold text-[#3BB5FF]">{resendTimer}</span> seconds
+                        </p>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={sendOtpToEmail}
+                            disabled={sending}
+                            className="text-[#3BB5FF] flex items-center text-sm hover:underline"
+                        >
+                            <Send className="w-4 h-4 mr-1" />
+                            {sending ? "Sending..." : "Resend OTP"}
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
-      ) : (
-        <div className="text-green-600 font-semibold">✅ Email Successfully Verified</div>
-      )}
-
-      {/* Send / Resend */}
-      {!otpVerified && (
-        <div className="mt-1">
-          {!otpSent ? (
-            <button
-              type="button"
-              onClick={sendOtpToEmail}
-              disabled={!isEmailValid || sending}
-              className="text-[#3BB5FF] flex items-center text-sm hover:underline disabled:opacity-50"
-              title={!isEmailValid ? "Enter a valid email first" : ""}
-            >
-              <Send className="w-4 h-4 mr-1" />
-              {sending ? "Sending..." : "Send OTP to Email"}
-            </button>
-          ) : resendTimer > 0 ? (
-            <p className="text-sm text-gray-500">
-              Resend OTP in <span className="font-semibold text-[#3BB5FF]">{resendTimer}</span> seconds
-            </p>
-          ) : (
-            <button
-              type="button"
-              onClick={sendOtpToEmail}
-              disabled={sending}
-              className="text-[#3BB5FF] flex items-center text-sm hover:underline"
-            >
-              <Send className="w-4 h-4 mr-1" />
-              {sending ? "Sending..." : "Resend OTP"}
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  );
+    );
 };
 
 const VendorRegistration = () => {
@@ -187,19 +187,19 @@ const VendorRegistration = () => {
         password: ''
     });
 
-  const timerIntervalId = useRef(null);
+    const timerIntervalId = useRef(null);
 
-  useEffect(() => {
-    timerIntervalId.current = setInterval(() => {
-      console.log("Tick");
-    }, 1000);
+    useEffect(() => {
+        timerIntervalId.current = setInterval(() => {
+            console.log("Tick");
+        }, 1000);
 
-    return () => {
-      if (timerIntervalId.current) {
-        clearInterval(timerIntervalId.current);
-      }
-    };
-  }, []);
+        return () => {
+            if (timerIntervalId.current) {
+                clearInterval(timerIntervalId.current);
+            }
+        };
+    }, []);
 
     const showPopupMessage = (message, type = 'info', duration = 4000) => {
         setPopup({ message, type, visible: true });
@@ -227,90 +227,90 @@ const VendorRegistration = () => {
     };
 
     // Send OTP with Clerk (email_code)
-const sendOtpToEmail = async () => {
-  if (!isLoaded || !signUp) return;          // Clerk not ready
-  if (resendTimer > 0 || sendingOtp) return; // rate-limit
-  if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-    showPopupMessage("Please enter a valid email address.", "error");
-    return;
-  }
+    const sendOtpToEmail = async () => {
+        if (!isLoaded || !signUp) return;          // Clerk not ready
+        if (resendTimer > 0 || sendingOtp) return; // rate-limit
+        if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            showPopupMessage("Please enter a valid email address.", "error");
+            return;
+        }
 
-  try {
-    setSendingOtp(true);
+        try {
+            setSendingOtp(true);
 
-    // IMPORTANT:
-    // If you plan to log user in right after OTP verify (passwordless),
-    // you can omit password here. If you need password-based account,
-    // you can also set password now OR later via signUp.update({ password }).
-    await signUp.create({ emailAddress: formData.email });
+            // IMPORTANT:
+            // If you plan to log user in right after OTP verify (passwordless),
+            // you can omit password here. If you need password-based account,
+            // you can also set password now OR later via signUp.update({ password }).
+            await signUp.create({ emailAddress: formData.email });
 
-    await signUp.prepareEmailAddressVerification({
-      strategy: "email_code",
-    });
+            await signUp.prepareEmailAddressVerification({
+                strategy: "email_code",
+            });
 
-    setOtpSent(true);
-    showPopupMessage("OTP sent to your email.", "success");
-    startResendTimer();
-  } catch (error) {
-    console.error("Clerk Email OTP send error:", error);
-    // Show cleaner messages
-    const msg =
-      error?.errors?.[0]?.longMessage ||
-      error?.errors?.[0]?.message ||
-      "OTP sending failed. Please check your email address.";
-    showPopupMessage(msg, "error");
-  } finally {
-    setSendingOtp(false);
-  }
-};
+            setOtpSent(true);
+            showPopupMessage("OTP sent to your email.", "success");
+            startResendTimer();
+        } catch (error) {
+            console.error("Clerk Email OTP send error:", error);
+            // Show cleaner messages
+            const msg =
+                error?.errors?.[0]?.longMessage ||
+                error?.errors?.[0]?.message ||
+                "OTP sending failed. Please check your email address.";
+            showPopupMessage(msg, "error");
+        } finally {
+            setSendingOtp(false);
+        }
+    };
 
-// Verify OTP with Clerk
-const verifyEmailOtp = async () => {
-  if (!isLoaded || !signUp) return;
-  if (!otp || verifyingOtp) return;
+    // Verify OTP with Clerk
+    const verifyEmailOtp = async () => {
+        if (!isLoaded || !signUp) return;
+        if (!otp || verifyingOtp) return;
 
-  try {
-    setVerifyingOtp(true);
+        try {
+            setVerifyingOtp(true);
 
-    const result = await signUp.attemptEmailAddressVerification({ code: otp });
+            const result = await signUp.attemptEmailAddressVerification({ code: otp });
 
-    if (result.status === "complete") {
-      // If you want to force adding password after verify:
-      // if (formData.password) {
-      //   await signUp.update({ password: formData.password });
-      // }
-      await setActive({ session: result.createdSessionId }); // user signed-in
-      setOtpVerified(true);
-      showPopupMessage("Email verified successfully!", "success");
-    } else {
-      showPopupMessage("OTP verification incomplete. Please try again.", "error");
-    }
-  } catch (error) {
-    console.error("Clerk Email OTP verification error:", error);
-    const msg =
-      error?.errors?.[0]?.longMessage ||
-      error?.errors?.[0]?.message ||
-      "Invalid OTP. Please try again.";
-    showPopupMessage(msg, "error");
-  } finally {
-    setVerifyingOtp(false);
-  }
-};
+            if (result.status === "complete") {
+                // If you want to force adding password after verify:
+                // if (formData.password) {
+                //   await signUp.update({ password: formData.password });
+                // }
+                await setActive({ session: result.createdSessionId }); // user signed-in
+                setOtpVerified(true);
+                showPopupMessage("Email verified successfully!", "success");
+            } else {
+                showPopupMessage("OTP verification incomplete. Please try again.", "error");
+            }
+        } catch (error) {
+            console.error("Clerk Email OTP verification error:", error);
+            const msg =
+                error?.errors?.[0]?.longMessage ||
+                error?.errors?.[0]?.message ||
+                "Invalid OTP. Please try again.";
+            showPopupMessage(msg, "error");
+        } finally {
+            setVerifyingOtp(false);
+        }
+    };
 
-// Resend timer (60s)
-const startResendTimer = () => {
-  setResendTimer(60);
-  const interval = setInterval(() => {
-    setResendTimer((prev) => {
-      if (prev <= 1) {
-        clearInterval(interval);
-        return 0;
-      }
-      return prev - 1;
-    });
-  }, 1000);
-  setTimerIntervalId(interval);
-};
+    // Resend timer (60s)
+    const startResendTimer = () => {
+        setResendTimer(60);
+        const interval = setInterval(() => {
+            setResendTimer((prev) => {
+                if (prev <= 1) {
+                    clearInterval(interval);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        setTimerIntervalId(interval);
+    };
 
 
     const validateStep = (step) => {
@@ -348,10 +348,39 @@ const startResendTimer = () => {
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-    const handleRazorpaySuccess = () => {
+    const handleRazorpaySuccess = async () => {
         setHasPaid(true);
-        showPopupMessage("Payment successful! You are being registered...", 'success');
-        handleSubmit(); // 👈 This auto-registers after payment!
+        showPopupMessage("Payment successful! Your request is being sent to admin...", 'success');
+        await sendRequestToAdmin();
+    };
+
+    const sendRequestToAdmin = async () => {
+        setIsSubmitting(true);
+        try {
+            const response = await fetch(`${BASE_URL}/api/vendor/request`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (!response.ok) {
+                showPopupMessage("Failed to send request. Please try again.", 'error');
+                return;
+            }
+
+            showPopupMessage("Your request has been sent to admin. It will be approved within 24 hours.", 'info', 6000);
+            // Optionally, disable further actions or redirect to a waiting page
+            setTimeout(() => {
+                navigate('/vendor-request-pending');
+            }, 3000);
+
+        } catch (error) {
+            showPopupMessage("Network error. Please try again.", 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleSubmit = async () => {
@@ -406,7 +435,7 @@ const startResendTimer = () => {
 
             localStorage.setItem("VendorToken", data.token);
 
-            // ✅ Save data to localStorage for Profile Page
+            // Save data to localStorage for Profile Page
             localStorage.setItem("vendorName", formData.contactPerson);
             localStorage.setItem("vendorEmail", formData.email);
             localStorage.setItem("vendorPhone", formData.phone);
@@ -428,7 +457,6 @@ const startResendTimer = () => {
             setIsSubmitting(false);
         }
     };
-
 
     const nextStep = () => {
         if (validateStep(currentStep) && currentStep < 3) {
@@ -675,16 +703,16 @@ const startResendTimer = () => {
                                         required
                                     />
                                     <EmailOtpField
-                                         otp={otp}
+                                        otp={otp}
                                         setOtp={setOtp}
                                         otpVerified={otpVerified}
-                                          otpSent={otpSent}
-                                      sendOtpToEmail={sendOtpToEmail}
-                                      verifyEmailOtp={verifyEmailOtp}
-                                      resendTimer={resendTimer}
-                                      sending={sendingOtp}
-                                      verifying={verifyingOtp}
-                                      email={formData.email}
+                                        otpSent={otpSent}
+                                        sendOtpToEmail={sendOtpToEmail}
+                                        verifyEmailOtp={verifyEmailOtp}
+                                        resendTimer={resendTimer}
+                                        sending={sendingOtp}
+                                        verifying={verifyingOtp}
+                                        email={formData.email}
                                     />
 
                                     <InputField
@@ -749,7 +777,7 @@ const startResendTimer = () => {
                                                     <X size={16} />
                                                 </button>
                                                 <p className="font-semibold text-yellow-500 mb-2">
-                                                    🧭 How to get Google Maps Link:
+                                                    How to get Google Maps Link:
                                                 </p>
                                                 <ol className="list-decimal list-inside space-y-1 text-wrap break-words">
                                                     <li>Go to Google Maps on a desktop browser and search for your location (e.g., “Khor Darwaja, Jawad, Madhya Pradesh”).</li>
