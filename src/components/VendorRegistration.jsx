@@ -266,51 +266,55 @@ const VendorRegistration = () => {
     };
 
 const verifyEmailOtp = async () => {
-  if (!isLoaded || !signUp) return;
-  if (!otp || verifyingOtp) return;
+    if (!isLoaded || !signUp) return;
+    if (!otp || verifyingOtp) return;
 
-  try {
-    setVerifyingOtp(true);
+    try {
+        setVerifyingOtp(true);
 
-    const result = await signUp.attemptEmailAddressVerification({ code: otp });
-    console.log("OTP verification result:", result);
+        // Step 1: Verify the email OTP
+        const result = await signUp.attemptEmailAddressVerification({ code: otp });
 
-    if (result.status === "missing_requirements") {
-      // Fill missing fields
-      await signUp.update({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        username: formData.username,
-        password: formData.password
-      });
+        console.log("OTP verification result:", result);
 
-      // Try completing the sign-up now
-      const finalResult = await signUp.completeSignUp();
+        if (result.status === "missing_requirements") {
+            // Step 2: Fill missing required fields
+            await signUp.update({
+                username: formData.username || formData.email.split("@")[0],
+                password: formData.password || "Temp@12345",
+                firstName: formData.contactPerson?.split(" ")[0] || "Vendor",
+                lastName: formData.contactPerson?.split(" ")[1] || "User"
+            });
 
-      if (finalResult.status === "complete") {
-        await setActive({ session: finalResult.createdSessionId });
-        setOtpVerified(true);
-        showPopupMessage("Sign-up completed successfully!", "success");
-      }
-    } 
-    else if (result.status === "complete") {
-      await setActive({ session: result.createdSessionId });
-      setOtpVerified(true);
-      showPopupMessage("Email verified successfully!", "success");
-    } 
-    else {
-      showPopupMessage("OTP verification incomplete. Please try again.", "error");
+            // Step 3: Complete signup
+            const completedSignUp = await signUp.completeSignUp();
+
+            if (completedSignUp.status === "complete") {
+                await setActive({ session: completedSignUp.createdSessionId });
+                setOtpVerified(true);
+                showPopupMessage("Signup complete and email verified!", "success");
+            }
+        } 
+        else if (result.status === "complete") {
+            // Already complete, just set active
+            await setActive({ session: result.createdSessionId });
+            setOtpVerified(true);
+            showPopupMessage("Email verified successfully!", "success");
+        } 
+        else {
+            showPopupMessage("OTP verification incomplete. Please try again.", "error");
+        }
+
+    } catch (error) {
+        console.error("Clerk Email OTP verification error:", error);
+        const msg =
+            error?.errors?.[0]?.longMessage ||
+            error?.errors?.[0]?.message ||
+            "Invalid OTP. Please try again.";
+        showPopupMessage(msg, "error");
+    } finally {
+        setVerifyingOtp(false);
     }
-  } catch (error) {
-    console.error("Clerk Email OTP verification error:", error);
-    const msg =
-      error?.errors?.[0]?.longMessage ||
-      error?.errors?.[0]?.message ||
-      "Invalid OTP. Please try again.";
-    showPopupMessage(msg, "error");
-  } finally {
-    setVerifyingOtp(false);
-  }
 };
 
 
