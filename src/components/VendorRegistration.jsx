@@ -265,47 +265,54 @@ const VendorRegistration = () => {
         }
     };
 
-    // Verify OTP with Clerk
 const verifyEmailOtp = async () => {
-    if (!isLoaded || !signUp) return;
-    if (!otp || verifyingOtp) return;
+  if (!isLoaded || !signUp) return;
+  if (!otp || verifyingOtp) return;
 
-    try {
-        setVerifyingOtp(true);
+  try {
+    setVerifyingOtp(true);
 
-        const result = await signUp.attemptEmailAddressVerification({ code: otp });
-        console.log("OTP verification result:", result);
+    const result = await signUp.attemptEmailAddressVerification({ code: otp });
+    console.log("OTP verification result:", result);
 
-        if (result.status === "complete") {
-            // OTP verified & signup completed
-            await setActive({ session: result.createdSessionId });
-            setOtpVerified(true);
-            showPopupMessage("Email verified successfully!", "success");
-        } else {
-            // Try to complete the signup if Clerk says more steps are needed
-            const completeResult = await signUp.completeSignUp();
-            console.log("Complete signup result:", completeResult);
+    if (result.status === "missing_requirements") {
+      // Fill missing fields
+      await signUp.update({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        username: formData.username,
+        password: formData.password
+      });
 
-            if (completeResult.status === "complete") {
-                await setActive({ session: completeResult.createdSessionId });
-                setOtpVerified(true);
-                showPopupMessage("Email verified successfully!", "success");
-            } else {
-                console.warn("Signup still incomplete:", completeResult);
-                showPopupMessage("Please complete the remaining signup steps.", "info");
-            }
-        }
-    } catch (error) {
-        console.error("Clerk Email OTP verification error:", error);
-        const msg =
-            error?.errors?.[0]?.longMessage ||
-            error?.errors?.[0]?.message ||
-            "Invalid OTP. Please try again.";
-        showPopupMessage(msg, "error");
-    } finally {
-        setVerifyingOtp(false);
+      // Try completing the sign-up now
+      const finalResult = await signUp.completeSignUp();
+
+      if (finalResult.status === "complete") {
+        await setActive({ session: finalResult.createdSessionId });
+        setOtpVerified(true);
+        showPopupMessage("Sign-up completed successfully!", "success");
+      }
+    } 
+    else if (result.status === "complete") {
+      await setActive({ session: result.createdSessionId });
+      setOtpVerified(true);
+      showPopupMessage("Email verified successfully!", "success");
+    } 
+    else {
+      showPopupMessage("OTP verification incomplete. Please try again.", "error");
     }
+  } catch (error) {
+    console.error("Clerk Email OTP verification error:", error);
+    const msg =
+      error?.errors?.[0]?.longMessage ||
+      error?.errors?.[0]?.message ||
+      "Invalid OTP. Please try again.";
+    showPopupMessage(msg, "error");
+  } finally {
+    setVerifyingOtp(false);
+  }
 };
+
 
 
     // Resend timer (60s)
