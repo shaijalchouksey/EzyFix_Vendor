@@ -172,7 +172,6 @@ const VendorRegistration = () => {
     const [sendingOtp, setSendingOtp] = useState(false);
     const [verifyingOtp, setVerifyingOtp] = useState(false);
 
-    if (!isLoaded) return null;
     const [formData, setFormData] = useState({
         businessName: '',
         businessType: '',
@@ -188,6 +187,8 @@ const VendorRegistration = () => {
         username: '',
         password: ''
     });
+
+    if (!isLoaded) return null;
 
   useEffect(() => {
     timerIntervalId.current = setInterval(() => {
