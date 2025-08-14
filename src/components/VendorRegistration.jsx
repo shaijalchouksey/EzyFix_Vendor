@@ -187,7 +187,7 @@ const VendorRegistration = () => {
         password: ''
     });
 
-    const timerIntervalId = useRef(null);
+    const [timerIntervalId, setTimerIntervalId] = useState(null);
 
     useEffect(() => {
         timerIntervalId.current = setInterval(() => {
