@@ -265,43 +265,35 @@ const VendorRegistration = () => {
         }
     };
 
-const verifyEmailOtp = async () => {
+    const verifyEmailOtp = async () => {
     if (!isLoaded || !signUp) return;
     if (!otp || verifyingOtp) return;
 
     try {
         setVerifyingOtp(true);
 
-        // Step 1: Verify the email OTP
+        // Step 1: Verify OTP
         const result = await signUp.attemptEmailAddressVerification({ code: otp });
-
         console.log("OTP verification result:", result);
 
+        // Step 2: If Clerk says missing requirements, update the signUp instance
         if (result.status === "missing_requirements") {
-            // Step 2: Fill missing required fields
             await signUp.update({
                 username: formData.username || formData.email.split("@")[0],
                 password: formData.password || "Temp@12345",
                 firstName: formData.contactPerson?.split(" ")[0] || "Vendor",
                 lastName: formData.contactPerson?.split(" ")[1] || "User"
             });
+        }
 
-            // Step 3: Complete signup
-            const completedSignUp = await signUp.completeSignUp();
+        // Step 3: Refresh signUp status
+        await signUp.reload();
 
-            if (completedSignUp.status === "complete") {
-                await setActive({ session: completedSignUp.createdSessionId });
-                setOtpVerified(true);
-                showPopupMessage("Signup complete and email verified!", "success");
-            }
-        } 
-        else if (result.status === "complete") {
-            // Already complete, just set active
-            await setActive({ session: result.createdSessionId });
+        if (signUp.status === "complete") {
+            await setActive({ session: signUp.createdSessionId });
             setOtpVerified(true);
-            showPopupMessage("Email verified successfully!", "success");
-        } 
-        else {
+            showPopupMessage("Signup complete and email verified!", "success");
+        } else {
             showPopupMessage("OTP verification incomplete. Please try again.", "error");
         }
 
