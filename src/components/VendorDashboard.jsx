@@ -52,6 +52,7 @@
 
             const mapped = data.map(c => ({
             id: c.id,
+            couponId: c.couponId || c.customCouponId,
             name: c.title,
             discount: `${c.discountValue} ${c.discountType}`,
             category: c.category || "General",
@@ -192,7 +193,7 @@
                     <td className="p-4 text-right">₹{coupon.price || 0}</td>
                     <td className="p-4 text-center">
                     <div className="flex justify-center items-center gap-3">
-                        <button onClick={() => handleEdit(coupon.id)} className="text-[#3BB5FF] hover:text-[#1aa0ef]">
+                        <button onClick={() => handleEdit(coupon.couponId)} className="text-[#3BB5FF] hover:text-[#1aa0ef]">
                         <Edit2 className="w-4 h-4" />
                         </button>
                         <button onClick={() => handleDelete(idx)} className="text-red-500 hover:text-red-700">
@@ -200,7 +201,7 @@
                         </button>
                     </div>
                     </td>
-                    <td className="p-4">{coupon.id}</td>
+                    <td className="p-4">{coupon.couponId}</td>
                 </tr>
                 ))}
             </tbody>
