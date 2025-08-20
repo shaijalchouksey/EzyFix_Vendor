@@ -50,17 +50,20 @@
             return;
             }
 
-            const mapped = data.map(c => ({
-            id: c.id,
-            couponId: c.couponId || c.customCouponId,
-            name: c.title,
-            discount: `${c.discountValue} ${c.discountType}`,
-            category: c.category || "General",
-            status: c.status || "Active",
-            redeemed: c.redeemed || 0,
-            purchased: c.purchased || 0,
-            price: c.price || 0 
-            }));
+            const mapped = data.map((c) => {
+              return {
+                id: c.id,
+                couponId: c.couponId || c.customCouponId || "N/A",
+                name: c.title || "Untitled",
+                discount: `${c.discountValue || 0} ${c.discountType || ""}`,
+                category: c.category || "General",
+                status: c.status || "Active",
+                redeemed: c.redeemed || 0,
+                purchased: c.purchased || 0,
+                price: c.price || 0,
+              };
+            });
+
 
             mapped.sort((a, b) => b.id - a.id);
             setCoupons(mapped);
