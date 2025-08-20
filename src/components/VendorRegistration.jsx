@@ -231,25 +231,28 @@ const VendorRegistration = () => {
     const handlePhoneChange = (e) => {
     let value = e.target.value;
 
-    // Sirf digits hi allow karo
-    value = value.replace(/\D/g, ""); 
-
-    // 10 digits se zyada ho to cut kar do
-    if (value.length > 10) {
-        value = value.slice(0, 10);
+    // Agar +91 se start nahi hota toh lagao
+    if (!value.startsWith("+91")) {
+        value = "+91";
     }
 
-    // Hamesha +91 prefix lagao
-    if (value) {
-        value = "+91" + value;
+    // Sirf +91 ke baad ke digits lo
+    let digits = value.replace("+91", "").replace(/\D/g, ""); 
+
+    // 10 digits limit
+    if (digits.length > 10) {
+        digits = digits.slice(0, 10);
     }
+
+    // Final value = +91 + digits
+    value = "+91" + digits;
 
     setFormData(prev => ({
         ...prev,
         phone: value
     }));
 
-    // Clear error jab user type kare
+    // Clear error
     if (errors.phone) {
         setErrors(prev => ({
             ...prev,
@@ -257,6 +260,7 @@ const VendorRegistration = () => {
         }));
     }
 };
+
 
 
     const sendOtpToEmail = async () => {
