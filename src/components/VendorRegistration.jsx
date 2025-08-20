@@ -227,6 +227,29 @@ const VendorRegistration = () => {
         }
     };
     // Send OTP with Clerk (email_code)
+
+    const handlePhoneChange = (e) => {
+        let value = e.target.value;
+    
+        // Hamesha +91 se start karna force kare
+        if (!value.startsWith("+91")) {
+            value = "+91" + value.replace(/^\+?91?/, "");
+        }
+    
+        setFormData(prev => ({
+            ...prev,
+            phone: value
+        }));
+    
+        // Clear error when user starts typing
+        if (errors.phone) {
+            setErrors(prev => ({
+                ...prev,
+                phone: ''
+            }));
+        }
+    };
+
     const sendOtpToEmail = async () => {
         if (!isLoaded || !signUp) return;          // Clerk not ready
         if (resendTimer > 0 || sendingOtp) return; // rate-limit
@@ -676,13 +699,14 @@ const VendorRegistration = () => {
                                         label="Phone Number"
                                         name="phone"
                                         type="tel"
-                                        placeholder="+1 (xxx) xxx-xxxx"
+                                        placeholder="+91 9876543210"
                                         icon={Phone}
                                         value={formData.phone}
-                                        onChange={handleInputChange}
+                                        onChange={handlePhoneChange}
                                         error={errors.phone}
                                         required
                                     />
+
                                     <InputField
                                         label="Email"
                                         name="email"
