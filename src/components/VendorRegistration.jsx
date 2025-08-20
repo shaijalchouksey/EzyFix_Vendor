@@ -229,38 +229,64 @@ const VendorRegistration = () => {
     // Send OTP with Clerk (email_code)
 
     const handlePhoneChange = (e) => {
-    let value = e.target.value;
-
-    // Agar +91 se start nahi hota toh lagao
-    if (!value.startsWith("+91")) {
-        value = "+91";
-    }
-
-    // Sirf +91 ke baad ke digits lo
-    let digits = value.replace("+91", "").replace(/\D/g, ""); 
-
-    // 10 digits limit
-    if (digits.length > 10) {
-        digits = digits.slice(0, 10);
-    }
-
-    // Final value = +91 + digits
-    value = "+91" + digits;
-
-    setFormData(prev => ({
-        ...prev,
-        phone: value
-    }));
-
-    // Clear error
-    if (errors.phone) {
-        setErrors(prev => ({
+        let value = e.target.value;
+    
+        // Agar +91 se start nahi hota toh lagao
+        if (!value.startsWith("+91")) {
+            value = "+91";
+        }
+    
+        // Sirf +91 ke baad ke digits lo
+        let digits = value.replace("+91", "").replace(/\D/g, ""); 
+    
+        // 10 digits limit
+        if (digits.length > 10) {
+            digits = digits.slice(0, 10);
+        }
+    
+        // Final value = +91 + digits
+        value = "+91" + digits;
+    
+        setFormData(prev => ({
             ...prev,
-            phone: ''
+            phone: value
         }));
-    }
-};
+    
+        // Clear error
+        if (errors.phone) {
+            setErrors(prev => ({
+                ...prev,
+                phone: ''
+            }));
+        }
+    };
 
+    const handlePostalCodeChange = (e) => {
+        let value = e.target.value;
+    
+        // Sirf digits hi allow karo
+        if (!/^\d*$/.test(value)) {
+            // ❌ Agar number ke alawa kuch daala → ignore
+            return;
+        }
+    
+        // Max 6 digits
+        if (value.length > 6) {
+            value = value.slice(0, 6);
+        }
+    
+        setFormData(prev => ({
+            ...prev,
+            postalCode: value
+        }));
+    
+        if (errors.postalCode) {
+            setErrors(prev => ({
+                ...prev,
+                postalCode: ''
+            }));
+        }
+    };
 
 
     const sendOtpToEmail = async () => {
@@ -775,12 +801,16 @@ const VendorRegistration = () => {
                                     <InputField
                                         label="Postal/Zip Code"
                                         name="postalCode"
+                                        type="text"
+                                        inputMode="numeric"      
+                                        pattern="[0-9]*"         
                                         placeholder="Postal Code"
                                         value={formData.postalCode}
-                                        onChange={handleInputChange}
+                                        onChange={handlePostalCodeChange}
                                         error={errors.postalCode}
                                         required
                                     />
+
                                     <div className="relative group w-full">
                                         <InputField
                                             label="Google Maps Link"
