@@ -229,26 +229,35 @@ const VendorRegistration = () => {
     // Send OTP with Clerk (email_code)
 
     const handlePhoneChange = (e) => {
-        let value = e.target.value;
-    
-        // Hamesha +91 se start karna force kare
-        if (!value.startsWith("+91")) {
-            value = "+91" + value.replace(/^\+?91?/, "");
-        }
-    
-        setFormData(prev => ({
+    let value = e.target.value;
+
+    // Sirf digits hi allow karo
+    value = value.replace(/\D/g, ""); 
+
+    // 10 digits se zyada ho to cut kar do
+    if (value.length > 10) {
+        value = value.slice(0, 10);
+    }
+
+    // Hamesha +91 prefix lagao
+    if (value) {
+        value = "+91" + value;
+    }
+
+    setFormData(prev => ({
+        ...prev,
+        phone: value
+    }));
+
+    // Clear error jab user type kare
+    if (errors.phone) {
+        setErrors(prev => ({
             ...prev,
-            phone: value
+            phone: ''
         }));
-    
-        // Clear error when user starts typing
-        if (errors.phone) {
-            setErrors(prev => ({
-                ...prev,
-                phone: ''
-            }));
-        }
-    };
+    }
+};
+
 
     const sendOtpToEmail = async () => {
         if (!isLoaded || !signUp) return;          // Clerk not ready
@@ -699,13 +708,14 @@ const VendorRegistration = () => {
                                         label="Phone Number"
                                         name="phone"
                                         type="tel"
-                                        placeholder="+91 9876543210"
+                                        placeholder="9876543210"
                                         icon={Phone}
                                         value={formData.phone}
                                         onChange={handlePhoneChange}
                                         error={errors.phone}
                                         required
                                     />
+
 
                                     <InputField
                                         label="Email"
