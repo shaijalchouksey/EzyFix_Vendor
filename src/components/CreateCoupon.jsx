@@ -54,8 +54,22 @@ const CouponCreationPage = () => {
     try {
       const categoryCode = formData.category.slice(0, 3).toUpperCase().replace(/\W/g, '');
       const vendorCode = localStorage.getItem("vendorId") || "VD001";
-      const randomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-      const customCouponId = `EZY-${categoryCode}-${vendorCode}-${randomCode}`;
+      // Helper function to generate random code of desired length
+      const generateRandomCode = (length = 6) => {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+      };
+      
+      // Usage:
+      const randomCode = generateRandomCode(6);
+      const customCouponId = `EZY-${randomCode}`;
+      console.log(customCouponId); 
+
 
       const form = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
