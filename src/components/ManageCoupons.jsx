@@ -24,7 +24,7 @@
         .then(data => {
             const mapped = data.map(c => ({
             id: c.id,
-            couponId: c.couponId || c.customCouponId
+            couponId: c.couponId || c.customCouponId,
             name: c.title,
             discount: `${c.discountValue} ${c.discountType}`,
             category: c.category || "General",
