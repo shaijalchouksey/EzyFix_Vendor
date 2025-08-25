@@ -147,11 +147,12 @@ const RedeemCouponsVendor = () => {
               onChange={(e) => setCouponCodeInput(e.target.value)}
               className="border p-2 rounded w-full md:w-1/3"
             />
-           <button
-              onClick={handleRedeemConfirm}
-              className="bg-brandBlue text-white px-4 py-2 rounded hover:bg-brandBlue/90>
-              Confirm Redemption
-            </button>
+          <button
+            onClick={handleRedeemConfirm}
+            className="bg-brandBlue text-white px-4 py-2 rounded hover:bg-brandBlue/90"
+          >
+            Confirm Redemption
+          </button>
           </div>
         </div>
         {/* Redeemed Coupons Table */}
