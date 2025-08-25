@@ -163,7 +163,7 @@ const handleRedeemConfirm = () => {
             />
           <button
             onClick={handleRedeemConfirm}
-            className="bg-brandBlue text-white px-4 py-2 rounded hover:bg-brandBlue/90"
+            className="bg-blue-500 text-white px-4 py-2 rounded"
           >
             Confirm Redemption
           </button>
