@@ -54,17 +54,18 @@ const RedeemCouponsVendor = () => {
         return;
       }
       try {
-        const res = await fetch(`${API_BASE_URL}/api/coupons/verify-redeem`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("VendorToken")}`,
-          },
-          body: JSON.stringify({
-             redeemedCouponId: couponIdInput,
-             redemption_code: couponCodeInput
-          }),
-          });
+       const res = await fetch(`${API_BASE_URL}/api/coupons/verify-redeem`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("VendorToken")}`,
+        },
+        body: JSON.stringify({
+          redeemedCouponId: couponIdInput,
+          redemption_code: couponCodeInput
+        })
+      });
+
         const data = await res.json();
         if (data.redeemStatus === "successful") {
           alert("✅ Coupon redeemed successfully!");
