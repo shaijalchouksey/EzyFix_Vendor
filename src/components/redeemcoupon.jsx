@@ -59,15 +59,15 @@ const RedeemCouponsVendor = () => {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/vendor/confirm-redeem`, {
+      const res = await fetch(`${API_BASE_URL}/api/coupons/verify`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("VendorToken")}`,
         },
         body: JSON.stringify({
-          couponId: couponIdInput,
-          couponCode: couponCodeInput,
+          coupon_id: couponIdInput,
++         code: couponCodeInput,
         }),
       });
 
@@ -180,12 +180,12 @@ const RedeemCouponsVendor = () => {
               <tbody>
                 {filteredCoupons.map((c, idx) => (
                   <tr key={idx} className="border-t hover:bg-gray-50">
-                    <td className="p-3">{c.couponId}</td>
-                    <td className="p-3">{c.code}</td>
-                    <td className="p-3">{c.type}</td>
+                    <td className="p-3">{c.originalCouponId}</td>
+                    <td className="p-3">{c.redemption_code}</td>
+                    <td className="p-3">{c.category}</td>
                     <td className="p-3">🪙{c.price}</td>
-                    <td className="p-3">{c.redeemedAt}</td>
-                    <td className="p-3">
+                    <td className="p-3">{new Date(c.redeemed_time).toLocaleString()}</td>
+                    {c.status}
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           c.redeemStatus === "successful"
@@ -224,10 +224,10 @@ const RedeemCouponsVendor = () => {
                 <tbody>
                   {successfulRedemptions.map((c, idx) => (
                     <tr key={idx} className="border-t hover:bg-gray-50">
-                      <td className="p-3">{c.couponId}</td>
-                      <td className="p-3">{c.code}</td>
-                      <td className="p-3">🪙{c.price}</td>
-                      <td className="p-3">{c.redeemedAt}</td>
+                      <td className="p-3">{c.originalCouponId}</td>
+                     <td className="p-3">{c.redemption_code}</td>
+                     <td className="p-3">🪙{c.price}</td>
+                     <td className="p-3">{new Date(c.redeemed_time).toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
