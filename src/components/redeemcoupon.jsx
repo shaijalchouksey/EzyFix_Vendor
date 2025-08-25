@@ -61,9 +61,10 @@ const RedeemCouponsVendor = () => {
             Authorization: `Bearer ${localStorage.getItem("VendorToken")}`,
           },
           body: JSON.stringify({
-            redeemedCouponId: couponIdInput,  
-            redemption_code: couponCodeInput,
-        });
+             redeemedCouponId: couponIdInput,
+             redemption_code: couponCodeInput
+          }),
+
         const data = await res.json();
         if (data.redeemStatus === "successful") {
           alert("✅ Coupon redeemed successfully!");
@@ -94,8 +95,8 @@ const RedeemCouponsVendor = () => {
         Authorization: `Bearer ${localStorage.getItem("VendorToken")}`,
       },
       body: JSON.stringify({
-        redeemedCouponId: couponId,
-        redemption_code: vendorInputCode,
+         redeemedCouponId: couponId,
+         redemption_code: vendorInputCode
       }),
     });
 
