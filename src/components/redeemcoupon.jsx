@@ -8,12 +8,43 @@ const RedeemCouponsVendor = () => {
   const [couponIdInput, setCouponIdInput] = useState("");
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [search, setSearch] = useState("");
+  const token = localStorage.getItem("VendorToken"); // 👈 ya jis key me token store karte ho
+  const [coupons, setCoupons] = useState([]);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     fetchRedeemedCoupons();
   }, []);
+
+
+   useEffect(() => {
+    const fetchRedeemedCoupons = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/coupons/redeem`, {
+          method: "GET", // 👈 list ke liye GET
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch redeemed coupons");
+        }
+
+        const data = await res.json();
+        setCoupons(data.redeemedCoupons || []); // ✅ response format ke hisaab se
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    if (token) {
+      fetchRedeemedCoupons();
+    }
+  }, [API_BASE_URL, token]);
+
 
   const fetchRedeemedCoupons = async () => {
   try {
@@ -50,7 +81,6 @@ const RedeemCouponsVendor = () => {
     setAllRedeemedCoupons([]); // fallback
   }
 };
-
 
   // const handleRedeemConfirm = async () => {
   //   if (!couponIdInput || !couponCodeInput) {
