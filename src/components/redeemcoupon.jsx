@@ -1,32 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import VendorHeader from "../components/VendorHeader"; // ✅ Import Header
-
 const RedeemCouponsVendor = () => {
   const [allRedeemedCoupons, setAllRedeemedCoupons] = useState([]);
   const [successfulRedemptions, setSuccessfulRedemptions] = useState([]);
   const [couponIdInput, setCouponIdInput] = useState("");
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [search, setSearch] = useState("");
-  const token = localStorage.getItem("VendorToken"); // 👈 ya jis key me token store karte ho
-  const [coupons, setCoupons] = useState([]);
-
+  const token = localStorage.getItem("VendorToken");
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
-    fetchRedeemedCoupons();
+    const init = async () => {
+      await fetchRedeemedCoupons();
+    };
+    init();
   }, []);
-
-
-   
-
-
   const fetchRedeemedCoupons = async () => {
   try {
-    const token = localStorage.getItem("VendorToken");
-    console.log("Token used for redeem coupons:", token);
-
-    const res = await fetch(`${API_BASE_URL}/api/coupons/redeem`, {
+    const res = await fetch(`${API_BASE_URL}/api/coupons/redeemed`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("VendorToken")}`,
       },
@@ -41,70 +33,58 @@ const RedeemCouponsVendor = () => {
       setAllRedeemedCoupons([]); // prevent crash
       return;
     }
-
     const data = await res.json();
     setAllRedeemedCoupons(data || []);
     if (Array.isArray(data)) {
-  setSuccessfulRedemptions(data.filter((c) => c.redeemStatus === "successful"));
-      } else {
-        console.warn("Received non-array data from API:", data);
-        setSuccessfulRedemptions([]);
-      }
-
+      setSuccessfulRedemptions(
+        data.filter((c) => (c.status || "").toLowerCase() === "successful")
+      );
+    } else {
+      console.warn("Received non-array data from API:", data);
+      setSuccessfulRedemptions([]);
+    }
   } catch (err) {
     console.error("❌ Failed to fetch redeemed coupons:", err);
     setAllRedeemedCoupons([]); // fallback
   }
 };
-
-  // const handleRedeemConfirm = async () => {
-  //   if (!couponIdInput || !couponCodeInput) {
-  //     alert("⚠️ Please enter both Coupon ID and Code");
-  //     return;
-  //   }
-
-  //   try {
-  //     const res = await fetch(`${API_BASE_URL}/api/coupons/verify`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${localStorage.getItem("VendorToken")}`,
-  //       },
-  //       body: JSON.stringify({
-  //         coupon_id: couponIdInput,
-  //         code: couponCodeInput,
-  //       }),
-  //     });
-
-  //     if (!res.ok) {
-  //       const err = await res.text();
-  //       alert("❌ Failed to confirm redemption: " + err);
-  //       return;
-  //     }
-
-  //     alert("✅ Coupon redemption confirmed successfully");
-  //     setCouponIdInput("");
-  //     setCouponCodeInput("");
-  //     fetchRedeemedCoupons();
-  //   } catch (err) {
-  //     console.error("❌ Error confirming redemption:", err);
-  //     alert("❌ Network error");
-  //   }
-  // };
-const handleRedeemConfirm = () => {
-  if (!couponIdInput || !couponCodeInput) {
-    alert("⚠️ Please enter both Coupon ID and Code");
-    return;
-  }
-
-  // ✅ Sirf message show karna hai
-  alert("✅ Coupon redemption confirmed successfully!");
-
-  // Inputs clear kar do
-  setCouponIdInput("");
-  setCouponCodeInput("");
-};
-
+  const handleRedeemConfirm = async () => {
+      if (!couponIdInput || !couponCodeInput) {
+        alert("⚠️ Please enter both Coupon ID and Code");
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/coupons/verify-redeem`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("VendorToken")}`,
+          },
+          body: JSON.stringify({
+            couponId: couponIdInput,
+            enteredCode: couponCodeInput,
+          }),
+        });
+        const data = await res.json();
+        if (data.redeemStatus === "successful") {
+          alert("✅ Coupon redeemed successfully!");
+          const cd = data.couponData;
+    
+          setSuccessfulRedemptions((prev) => {
+            if (prev.some(x => x.originalCouponId === cd.originalCouponId)) return prev;
+            return [...prev, cd];
+          });
+          await fetchRedeemedCoupons();
+        } else {
+          alert("❌ " + (data.message || "Verification failed"));
+        }
+        setCouponIdInput("");
+        setCouponCodeInput("");
+      } catch (err) {
+        console.error("❌ Redeem confirm error:", err);
+        alert("❌ Something went wrong while redeeming coupon.");
+      }
+    };
 
   const handleVerifyCode = async (couponId, vendorInputCode) => {
   try {
@@ -132,14 +112,10 @@ const handleRedeemConfirm = () => {
     alert("❌ Network or server error.");
   }
 };
-
-
-  const filteredCoupons = allRedeemedCoupons.filter((c) => {
-  const id = c.originalCouponId || ""; // fallback empty string
-  return id.toLowerCase().includes(search.toLowerCase());
+ const filteredCoupons = (allRedeemedCoupons || []).filter((c) => {
+  const id = (c?.originalCouponId || "").toLowerCase();
+  return id.includes((search || "").toLowerCase().trim());
 });
-
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ✅ Include the reusable header */}
@@ -193,7 +169,7 @@ const handleRedeemConfirm = () => {
                 <tr className="bg-gray-100 text-gray-700">
                   <th className="p-3">Coupon ID</th>
                   <th className="p-3">Coupon Code</th>
-                  <th className="p-3">Type</th>
+                  <th className="p-3">Category/Business</th>
                   <th className="p-3">Price</th>
                   <th className="p-3">Redeemed At</th>
                   <th className="p-3">Status</th>
@@ -202,21 +178,26 @@ const handleRedeemConfirm = () => {
               <tbody>
                 {filteredCoupons.map((c, idx) => (
                   <tr key={idx} className="border-t hover:bg-gray-50">
-                    <td className="p-3">{c.couponId}</td>
-                    <td className="p-3">{c.code}</td>
-                    <td className="p-3">{c.type}</td>
+                    <td className="p-3">{c.originalCouponId}</td>
+                    <td className="p-3">{c.redemption_code}</td>
+                    <td className="p-3">{c.category || c.business_name || "-"}</td>
                     <td className="p-3">🪙{c.price}</td>
-                    <td className="p-3">{c.redeemedAt}</td>
                     <td className="p-3">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          c.redeemStatus === "successful"
-                            ? "bg-green-100 text-green-600"
-                            : "bg-yellow-100 text-yellow-600"
-                        }`}
-                      >
-                        {c.redeemStatus}
-                      </span>
+                      {c.redeemed_time ? new Date(c.redeemed_time).toLocaleString() : "-"}
+                    </td>
+                    <td className="p-3">
+                      {(() => {
+                        const ok = (c.status || "").toLowerCase() === "successful";
+                        return (
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              ok ? "bg-green-100 text-green-600" : "bg-yellow-100 text-yellow-600"
+                            }`}
+                          >
+                            {c.status || "-"}
+                          </span>
+                        );
+                      })()}
                     </td>
                   </tr>
                 ))}
