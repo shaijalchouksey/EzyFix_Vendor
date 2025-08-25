@@ -64,7 +64,7 @@ const RedeemCouponsVendor = () => {
              redeemedCouponId: couponIdInput,
              redemption_code: couponCodeInput
           }),
-
+          });
         const data = await res.json();
         if (data.redeemStatus === "successful") {
           alert("✅ Coupon redeemed successfully!");
