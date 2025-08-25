@@ -67,7 +67,7 @@ const RedeemCouponsVendor = () => {
         },
         body: JSON.stringify({
           coupon_id: couponIdInput,
-+         code: couponCodeInput,
+          code: couponCodeInput,
         }),
       });
 
@@ -115,9 +115,11 @@ const RedeemCouponsVendor = () => {
 };
 
 
-  const filteredCoupons = allRedeemedCoupons.filter((c) =>
-    c.couponId.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredCoupons = allRedeemedCoupons.filter((c) => {
+  const id = c.originalCouponId || ""; // fallback empty string
+  return id.toLowerCase().includes(search.toLowerCase());
+});
+
 
   return (
     <div className="min-h-screen bg-gray-50">
