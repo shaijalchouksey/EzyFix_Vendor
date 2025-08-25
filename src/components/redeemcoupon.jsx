@@ -18,32 +18,7 @@ const RedeemCouponsVendor = () => {
   }, []);
 
 
-   useEffect(() => {
-    const fetchRedeemedCoupons = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/coupons/redeem`, {
-          method: "GET", // 👈 list ke liye GET
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch redeemed coupons");
-        }
-
-        const data = await res.json();
-        setCoupons(data.redeemedCoupons || []); // ✅ response format ke hisaab se
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    if (token) {
-      fetchRedeemedCoupons();
-    }
-  }, [API_BASE_URL, token]);
+   
 
 
   const fetchRedeemedCoupons = async () => {
@@ -51,7 +26,7 @@ const RedeemCouponsVendor = () => {
     const token = localStorage.getItem("VendorToken");
     console.log("Token used for redeem coupons:", token);
 
-    const res = await fetch(`${API_BASE_URL}/api/coupons/vendor/redeemed-coupons`, {
+    const res = await fetch(`${API_BASE_URL}/api/coupons/redeem`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("VendorToken")}`,
       },
