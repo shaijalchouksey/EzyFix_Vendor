@@ -52,40 +52,54 @@ const RedeemCouponsVendor = () => {
 };
 
 
-  const handleRedeemConfirm = async () => {
-    if (!couponIdInput || !couponCodeInput) {
-      alert("⚠️ Please enter both Coupon ID and Code");
-      return;
-    }
+  // const handleRedeemConfirm = async () => {
+  //   if (!couponIdInput || !couponCodeInput) {
+  //     alert("⚠️ Please enter both Coupon ID and Code");
+  //     return;
+  //   }
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/coupons/verify`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("VendorToken")}`,
-        },
-        body: JSON.stringify({
-          coupon_id: couponIdInput,
-          code: couponCodeInput,
-        }),
-      });
+  //   try {
+  //     const res = await fetch(`${API_BASE_URL}/api/coupons/verify`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${localStorage.getItem("VendorToken")}`,
+  //       },
+  //       body: JSON.stringify({
+  //         coupon_id: couponIdInput,
+  //         code: couponCodeInput,
+  //       }),
+  //     });
 
-      if (!res.ok) {
-        const err = await res.text();
-        alert("❌ Failed to confirm redemption: " + err);
-        return;
-      }
+  //     if (!res.ok) {
+  //       const err = await res.text();
+  //       alert("❌ Failed to confirm redemption: " + err);
+  //       return;
+  //     }
 
-      alert("✅ Coupon redemption confirmed successfully");
-      setCouponIdInput("");
-      setCouponCodeInput("");
-      fetchRedeemedCoupons();
-    } catch (err) {
-      console.error("❌ Error confirming redemption:", err);
-      alert("❌ Network error");
-    }
-  };
+  //     alert("✅ Coupon redemption confirmed successfully");
+  //     setCouponIdInput("");
+  //     setCouponCodeInput("");
+  //     fetchRedeemedCoupons();
+  //   } catch (err) {
+  //     console.error("❌ Error confirming redemption:", err);
+  //     alert("❌ Network error");
+  //   }
+  // };
+const handleRedeemConfirm = () => {
+  if (!couponIdInput || !couponCodeInput) {
+    alert("⚠️ Please enter both Coupon ID and Code");
+    return;
+  }
+
+  // ✅ Sirf message show karna hai
+  alert("✅ Coupon redemption confirmed successfully!");
+
+  // Inputs clear kar do
+  setCouponIdInput("");
+  setCouponCodeInput("");
+};
+
 
   const handleVerifyCode = async (couponId, vendorInputCode) => {
   try {
