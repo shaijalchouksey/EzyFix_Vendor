@@ -183,12 +183,12 @@ const RedeemCouponsVendor = () => {
               <tbody>
                 {filteredCoupons.map((c, idx) => (
                   <tr key={idx} className="border-t hover:bg-gray-50">
-                    <td className="p-3">{c.originalCouponId}</td>
-                    <td className="p-3">{c.redemption_code}</td>
-                    <td className="p-3">{c.category}</td>
+                    <td className="p-3">{c.couponId}</td>
+                    <td className="p-3">{c.code}</td>
+                    <td className="p-3">{c.type}</td>
                     <td className="p-3">🪙{c.price}</td>
-                    <td className="p-3">{new Date(c.redeemed_time).toLocaleString()}</td>
-                    {c.status}
+                    <td className="p-3">{c.redeemedAt}</td>
+                    <td className="p-3">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           c.redeemStatus === "successful"
@@ -199,9 +199,10 @@ const RedeemCouponsVendor = () => {
                         {c.redeemStatus}
                       </span>
                     </td>
-                  </tr>
-                ))}
+                  </tr>   // ✅ Ye sahi hai
+                ))}        // ✅ Ye properly close hona chahiye
               </tbody>
+
             </table>
           </div>
         </div>
