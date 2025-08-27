@@ -408,36 +408,36 @@ const VendorRegistration = () => {
         await sendRequestToAdmin();
     };
 
-    const sendRequestToAdmin = async () => {
-        setIsSubmitting(true);
-        try {
-            const response = await fetch(`${BASE_URL}/api/vendor/request`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formData),
-            });
+    // const sendRequestToAdmin = async () => {
+    //     setIsSubmitting(true);
+    //     try {
+    //         const response = await fetch(`${BASE_URL}/api/vendor/request`, {
+    //             method: "POST",
+    //             headers: {
+    //                 "Content-Type": "application/json"
+    //             },
+    //             body: JSON.stringify(formData),
+    //         });
 
-            if (!response.ok) {
-                showPopupMessage("Failed to send request. Please try again.", 'error');
-                return;
-            }
+    //         if (!response.ok) {
+    //             showPopupMessage("Failed to send request. Please try again.", 'error');
+    //             return;
+    //         }
 
-            showPopupMessage("Your request has been sent to admin. It will be approved within 24 hours.", 'info', 6000);
-            // Optionally, disable further actions or redirect to a waiting page
-            setTimeout(() => {
-                navigate('/vendor-request-pending');
-            }, 3000);
+    //         showPopupMessage("Your request has been sent to admin. It will be approved within 24 hours.", 'info', 6000);
+    //         // Optionally, disable further actions or redirect to a waiting page
+    //         setTimeout(() => {
+    //             navigate('/vendor-request-pending');
+    //         }, 3000);
 
-        } catch (error) {
-            showPopupMessage("Network error. Please try again.", 'error');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    //     } catch (error) {
+    //         showPopupMessage("Network error. Please try again.", 'error');
+    //     } finally {
+    //         setIsSubmitting(false);
+    //     }
+    // };
 
-    const handleSubmit = async () => {
+    // const handleSubmit = async () => {
     if (!validateStep(3)) return;
 
     setIsSubmitting(true);
