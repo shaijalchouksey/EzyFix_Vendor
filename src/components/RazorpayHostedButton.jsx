@@ -19,8 +19,8 @@ const RazorpayButton = ({ onPaymentSuccess }) => {
     }
 
     const options = {
-      key: "rzp_test_kqC4rQy8GhSRlx",
-      amount: 100,
+      key: "rzp_live_7zN94jrBgxVl1T",
+      amount: 1,
       currency: "INR",
       name: "EzyFix Vendor",
       description: "Business Registration Fee",
