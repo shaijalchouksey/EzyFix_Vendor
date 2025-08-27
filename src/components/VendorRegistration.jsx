@@ -465,7 +465,7 @@ const VendorRegistration = () => {
             if (errorData?.msg === "Email already registered") {
                 showPopupMessage("This email is already registered. Please login or use a different email.", 'error');
             } else if (errorData?.msg) {
-                showPopupMessage(errorData.msg, 'error'); // Show actual message if available
+                showPopupMessage(errorData.msg, 'error');
             } else {
                 showPopupMessage("Registration failed. Please try again.", 'error');
             }
@@ -476,46 +476,36 @@ const VendorRegistration = () => {
         const data = await response.json();
         console.log("Registered successfully:", data);
 
-        // 🟡 Step 1: Show temporary fake approval message
-        showPopupMessage("Your registration request has been sent to the admin for approval.", 'info');
+        // ✅ Show direct success message
+        showPopupMessage("Registration successful! Welcome to EzyFix!", 'success');
 
-        // ✅ Step 2: After 2 seconds, simulate approval
-        setTimeout(() => {
-            // 🟢 Step 3: Show success message
-            showPopupMessage("Registration successful! Welcome to EzyFix!", 'success');
+        // ✅ Save user info to localStorage
+        if (data.id) {
+            localStorage.setItem("VendorId", data.id);
+        } else {
+            console.error("VendorId missing in response");
+        }
 
-            // ✅ Step 4: Save data in localStorage
-            if (data.id) {
-                localStorage.setItem("VendorId", data.id);
-            } else {
-                console.error("VendorId missing in response");
-            }
+        localStorage.setItem("VendorToken", data.token);
+        localStorage.setItem("vendorName", formData.contactPerson);
+        localStorage.setItem("vendorEmail", formData.email);
+        localStorage.setItem("vendorPhone", formData.phone);
+        localStorage.setItem("vendorBusiness", formData.businessName);
+        localStorage.setItem("vendorBusinessType", formData.businessType);
+        localStorage.setItem("vendorAddress", formData.streetAddress);
+        localStorage.setItem("vendorGoogleMapsLink", formData.googleMapsLink || "");
+        localStorage.setItem("vendorDescription", formData.businessDescription || "");
 
-            localStorage.setItem("VendorToken", data.token);
-            localStorage.setItem("vendorName", formData.contactPerson);
-            localStorage.setItem("vendorEmail", formData.email);
-            localStorage.setItem("vendorPhone", formData.phone);
-            localStorage.setItem("vendorBusiness", formData.businessName);
-            localStorage.setItem("vendorBusinessType", formData.businessType);
-            localStorage.setItem("vendorAddress", formData.streetAddress);
-            localStorage.setItem("vendorGoogleMapsLink", formData.googleMapsLink || "");
-            localStorage.setItem("vendorDescription", formData.businessDescription || "");
-
-            // ✅ Step 5: Navigate to dashboard after 1 more second
-            setTimeout(() => {
-                navigate('/dashboard');
-            }, 1000);
-        }, 2000);
+        // ✅ Redirect to dashboard immediately
+        navigate('/dashboard');
 
     } catch (error) {
-        console.error("Network error:", error);
-        showPopupMessage("Network error. Please check your connection and try again.", 'error');
+        console.error("Network error during registration:", error);
+        showPopupMessage("Network error. Please try again.", 'error');
     } finally {
         setIsSubmitting(false);
     }
 };
-    
-
     const nextStep = () => {
         if (validateStep(currentStep) && currentStep < 3) {
             setCurrentStep(currentStep + 1);
