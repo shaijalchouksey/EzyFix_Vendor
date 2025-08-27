@@ -27,7 +27,7 @@ const RazorpayButton = ({ onPaymentSuccess }) => {
       },
       prefill: {
         name: "Vendor",
-        email: "vendor@example.com"
+        email: "vendor@example.com",
         contact: "9999999999",
       },
       theme: {
