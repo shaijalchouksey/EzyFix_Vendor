@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-
 const RazorpayButton = ({ onPaymentSuccess }) => {
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -16,7 +15,6 @@ const RazorpayButton = ({ onPaymentSuccess }) => {
       alert("Razorpay SDK failed to load. Are you online?");
       return;
     }
-
     const options = {
       key: "rzp_live_7zN94jrBgxVl1T",
       amount: 1,
@@ -39,7 +37,6 @@ const RazorpayButton = ({ onPaymentSuccess }) => {
     const rzp = new window.Razorpay(options);
     rzp.open();
   };
-
   return (
     <button
       type="button"
@@ -50,5 +47,4 @@ const RazorpayButton = ({ onPaymentSuccess }) => {
     </button>
   );
 };
-
 export default RazorpayButton;
