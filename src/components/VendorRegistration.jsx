@@ -405,7 +405,7 @@ const VendorRegistration = () => {
     const handleRazorpaySuccess = async () => {
         setHasPaid(true);
         showPopupMessage("Payment successful! Your request is being sent to admin...", 'success');
-        await sendRequestToAdmin();
+       // await sendRequestToAdmin();
     };
 
     // const sendRequestToAdmin = async () => {
