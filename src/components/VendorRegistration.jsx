@@ -438,58 +438,60 @@ const VendorRegistration = () => {
     };
 
     const handleSubmit = async () => {
-        if (!validateStep(3)) return;
+    if (!validateStep(3)) return;
 
-        setIsSubmitting(true);
-        try {
-            const response = await fetch(`${BASE_URL}/api/auth/register`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formData),
-            });
+    setIsSubmitting(true);
+    try {
+        const response = await fetch(`${BASE_URL}/api/auth/register`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(formData),
+        });
 
-            if (!response.ok) {
-                let errorData;
-                try {
-                    errorData = await response.json();
-                } catch (jsonError) {
-                    console.error("Error parsing JSON from backend:", jsonError);
-                    showPopupMessage("Something went wrong. Please try again.", 'error');
-                    return;
-                }
-
-                console.error("Registration failed:", errorData);
-
-                if (errorData?.msg === "Email already registered") {
-                    showPopupMessage("This email is already registered. Please login or use a different email.", 'error');
-                } else if (errorData?.msg) {
-                    showPopupMessage(errorData.msg, 'error'); // Show actual message if available
-                } else {
-                    showPopupMessage("Registration failed. Please try again.", 'error');
-                }
-
+        if (!response.ok) {
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (jsonError) {
+                console.error("Error parsing JSON from backend:", jsonError);
+                showPopupMessage("Something went wrong. Please try again.", 'error');
                 return;
             }
 
-            const data = await response.json();
-            console.log("Registered successfully:", data);
+            console.error("Registration failed:", errorData);
+
+            if (errorData?.msg === "Email already registered") {
+                showPopupMessage("This email is already registered. Please login or use a different email.", 'error');
+            } else if (errorData?.msg) {
+                showPopupMessage(errorData.msg, 'error'); // Show actual message if available
+            } else {
+                showPopupMessage("Registration failed. Please try again.", 'error');
+            }
+
+            return;
+        }
+
+        const data = await response.json();
+        console.log("Registered successfully:", data);
+
+        // 🟡 Step 1: Show temporary fake approval message
+        showPopupMessage("Your registration request has been sent to the admin for approval.", 'info');
+
+        // ✅ Step 2: After 2 seconds, simulate approval
+        setTimeout(() => {
+            // 🟢 Step 3: Show success message
+            showPopupMessage("Registration successful! Welcome to EzyFix!", 'success');
+
+            // ✅ Step 4: Save data in localStorage
             if (data.id) {
-                localStorage.setItem("VendorId", data.id); // <--- this line is the fix
+                localStorage.setItem("VendorId", data.id);
             } else {
                 console.error("VendorId missing in response");
             }
 
-            // Show success popup first
-            showPopupMessage("Registration successful! Welcome to EzyFix!", 'success');
-
-            console.log("Response received:", response);
-            console.log("Full response object:", response);
-
             localStorage.setItem("VendorToken", data.token);
-
-            // Save data to localStorage for Profile Page
             localStorage.setItem("vendorName", formData.contactPerson);
             localStorage.setItem("vendorEmail", formData.email);
             localStorage.setItem("vendorPhone", formData.phone);
@@ -499,18 +501,20 @@ const VendorRegistration = () => {
             localStorage.setItem("vendorGoogleMapsLink", formData.googleMapsLink || "");
             localStorage.setItem("vendorDescription", formData.businessDescription || "");
 
-            // Wait for popup to be visible, then navigate after 2 seconds
+            // ✅ Step 5: Navigate to dashboard after 1 more second
             setTimeout(() => {
                 navigate('/dashboard');
-            }, 2000);
+            }, 1000);
+        }, 2000);
 
-        } catch (error) {
-            console.error("Network error:", error);
-            showPopupMessage("Network error. Please check your connection and try again.", 'error');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    } catch (error) {
+        console.error("Network error:", error);
+        showPopupMessage("Network error. Please check your connection and try again.", 'error');
+    } finally {
+        setIsSubmitting(false);
+    }
+};
+    
 
     const nextStep = () => {
         if (validateStep(currentStep) && currentStep < 3) {
