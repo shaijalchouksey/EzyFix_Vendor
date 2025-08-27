@@ -437,7 +437,7 @@ const VendorRegistration = () => {
     //     }
     // };
 
-    // const handleSubmit = async () => {
+    const handleSubmit = async () => {
     if (!validateStep(3)) return;
 
     setIsSubmitting(true);
