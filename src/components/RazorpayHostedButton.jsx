@@ -10,7 +10,6 @@ const RazorpayButton = ({ onPaymentSuccess }) => {
       document.body.appendChild(script);
     });
   };
-
   const handleRazorpay = async () => {
     const res = await loadRazorpayScript();
     if (!res) {
@@ -26,7 +25,7 @@ const RazorpayButton = ({ onPaymentSuccess }) => {
       description: "Business Registration Fee",
       handler: function (response) {
         console.log("Payment Success:", response);
-        onPaymentSuccess(); // 👈 This triggers registration
+        onPaymentSuccess();
       },
       prefill: {
         name: "Vendor",
@@ -37,7 +36,6 @@ const RazorpayButton = ({ onPaymentSuccess }) => {
         color: "#10B981",
       },
     };
-
     const rzp = new window.Razorpay(options);
     rzp.open();
   };
