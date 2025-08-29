@@ -18,7 +18,7 @@ const RedeemCouponsVendor = () => {
   }, []);
   const fetchRedeemedCoupons = async () => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/coupons/redeemed`, {
+    const res = await fetch(`${API_BASE_URL}/api/coupons/redeemed/all`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("VendorToken")}`,
       },
