@@ -51,7 +51,7 @@
             }
 
             const mapped = data.map((c) => {
-              return {
+                return {
                 id: c.id,
                 couponId: c.couponId || c.customCouponId || "N/A",
                 name: c.title || "Untitled",
