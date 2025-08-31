@@ -578,13 +578,15 @@ const VendorRegistration = () => {
             {/* Header */}
             <header className="bg-white shadow-md border-b-4 border-[#3BB5FF]">
                 <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+                    {/* Logo */}
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-[#3BB5FF] rounded-xl flex items-center justify-center">
-                            <Gift className="w-6 h-6 text-white" />
-                        </div>
-                        <h1 className="text-2xl font-bold text-[#3BB5FF]">EzyFix</h1>
+                        <img
+                            src="/ezyfix-logo.jpg"
+                            alt="EzyFix Logo"
+                            className="w-10 h-10 object-contain rounded-xl"
+                        />
+                        <span className="text-2xl font-bold text-[#3BB5FF] hidden sm:inline">EzyFix</span>
                     </div>
-
                 </div>
             </header>
 
@@ -988,23 +990,30 @@ const VendorRegistration = () => {
 
             {/* Footer */}
             <footer className="bg-gray-800 text-white py-12">
-                <div className="container mx-auto px-6 text-center">
-                    <div className="flex items-center justify-center space-x-3 mb-4">
-                        <div className="w-10 h-10 bg-[#3BB5FF] rounded-lg flex items-center justify-center">
-                            <Gift className="w-6 h-6 text-white" />
-                        </div>
-                        <h3 className="text-2xl font-bold">EzyFix</h3>
-                    </div>
-                    <p className="text-gray-400 mb-4">Connecting businesses with customers through amazing deals</p>
-                    <p className="text-gray-500 text-sm">© 2025 EzyFix. All rights reserved.</p>
-                    <div className="flex flex-wrap justify-center gap-4 mt-2 text-xs text-gray-500">
-                        <Link to="/policy" className="hover:underline">Policy</Link>
-                        <Link to="/terms" className="hover:underline">Terms</Link>
-                        <Link to="/refund" className="hover:underline">Refund</Link>
-                        <Link to="/contact" className="hover:underline">ContactUs</Link>
-                    </div>
+              <div className="container mx-auto px-6 text-center">
+                {/* Logo */}
+                <div className="flex justify-center items-center space-x-3 mb-6">
+                  <img
+                    src="/ezyfix-logo.jpg"
+                    alt="EzyFix Logo"
+                    className="w-10 h-10 object-contain rounded-xl"
+                  />
+                  <span className="text-2xl font-bold text-[#3BB5FF] hidden sm:inline">EzyFix</span>
                 </div>
+            
+                <p className="text-gray-400 mb-4">
+                  Connecting businesses with customers through amazing deals
+                </p>
+                <p className="text-gray-500 text-sm">© 2025 EzyFix. All rights reserved.</p>
+                <div className="flex flex-wrap justify-center gap-4 mt-2 text-xs text-gray-500">
+                  <Link to="/policy" className="hover:underline">Policy</Link>
+                  <Link to="/terms" className="hover:underline">Terms</Link>
+                  <Link to="/refund" className="hover:underline">Refund</Link>
+                  <Link to="/contact" className="hover:underline">ContactUs</Link>
+                </div>
+              </div>
             </footer>
+
             {showConfirmation && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
                     <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
