@@ -61,7 +61,7 @@
                 redeemed: c.redeemed || 0,
                 purchased: c.purchased || 0,
                 price: c.price || 0,
-              };
+            };
             });
 
 

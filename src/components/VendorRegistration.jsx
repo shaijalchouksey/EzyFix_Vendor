@@ -989,56 +989,28 @@ const VendorRegistration = () => {
 
             {/* Footer */}
             <footer className="bg-gray-800 text-white py-12">
-<<<<<<< HEAD
-              <div className="container mx-auto px-6 text-center">
+            <div className="container mx-auto px-6 text-center">
                 {/* Logo */}
                 <div className="flex justify-center items-center space-x-3 mb-6">
-                  <img
+                    <img
                     src="/ezyfix-logo.jpg"
                     alt="EzyFix Logo"
-                    className="w-10 h-10 object-contain rounded-xl"
-                  />
-                  <span className="text-2xl font-bold text-[#3BB5FF] hidden sm:inline">EzyFix</span>
+                    className="w-10 h-10 object-contain rounded-xl"/>
+                <span className="text-2xl font-bold text-[#3BB5FF] hidden sm:inline">EzyFix</span>
                 </div>
             
                 <p className="text-gray-400 mb-4">
-                  Connecting businesses with customers through amazing deals
+                    Connecting businesses with customers through amazing deals
                 </p>
                 <p className="text-gray-500 text-sm">© 2025 EzyFix. All rights reserved.</p>
                 <div className="flex flex-wrap justify-center gap-4 mt-2 text-xs text-gray-500">
-                  <Link to="/policy" className="hover:underline">Policy</Link>
-                  <Link to="/terms" className="hover:underline">Terms</Link>
-                  <Link to="/refund" className="hover:underline">Refund</Link>
-                  <Link to="/contact" className="hover:underline">ContactUs</Link>
+                    <Link to="/policy" className="hover:underline">Policy</Link>
+                    <Link to="/terms" className="hover:underline">Terms</Link>
+                    <Link to="/refund" className="hover:underline">Refund</Link>
+                    <Link to="/contact" className="hover:underline">ContactUs</Link>
                 </div>
-              </div>
+                </div>
             </footer>
-=======
-  <div className="container mx-auto px-6 text-center">
-    {/* Logo */}
-    <div className="flex justify-center items-center space-x-3 mb-6">
-      <img
-        src="/ezyfix-logo.jpg"
-        alt="EzyFix Logo"
-        className="w-10 h-10 object-contain rounded-xl"
-      />
-      <span className="text-2xl font-bold text-[#3BB5FF] hidden sm:inline">EzyFix</span>
-    </div>
-
-    <p className="text-gray-400 mb-4">
-      Connecting businesses with customers through amazing deals
-    </p>
-    <p className="text-gray-500 text-sm">© 2025 EzyFix. All rights reserved.</p>
-    <div className="flex flex-wrap justify-center gap-4 mt-2 text-xs text-gray-500">
-      <Link to="/policy" className="hover:underline">Policy</Link>
-      <Link to="/terms" className="hover:underline">Terms</Link>
-      <Link to="/refund" className="hover:underline">Refund</Link>
-      <Link to="/contact" className="hover:underline">ContactUs</Link>
-    </div>
-  </div>
-</footer>
->>>>>>> 6744493 (update dist)
-
             {showConfirmation && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
                     <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
