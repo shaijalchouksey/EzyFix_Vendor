@@ -189,22 +189,22 @@ const VendorRegistration = () => {
     const [timerIntervalId, setTimerIntervalId] = useState(null);
 
     useEffect(() => {
-    const id = setInterval(() => {
-        console.log("Tick");
-    }, 1000);
-    setTimerIntervalId(id);
+        const id = setInterval(() => {
+            console.log("Tick");
+        }, 1000);
+        setTimerIntervalId(id);
 
-    return () => {
-      if (id) {
-        clearInterval(id);
-      }
-    };
-  }, []);
+        return () => {
+            if (id) {
+                clearInterval(id);
+            }
+        };
+    }, []);
 
     const showPopupMessage = (message, type = 'info', duration = 4000) => {
         setPopup({ message, type, visible: true });
         setTimeout(() => {
-            setPopup(prev => ({ ...prev, visible: false })); 
+            setPopup(prev => ({ ...prev, visible: false }));
         }, duration);
     };
 
@@ -229,28 +229,28 @@ const VendorRegistration = () => {
 
     const handlePhoneChange = (e) => {
         let value = e.target.value;
-    
+
         // Agar +91 se start nahi hota toh lagao
         if (!value.startsWith("+91")) {
             value = "+91";
         }
-    
+
         // Sirf +91 ke baad ke digits lo
-        let digits = value.replace("+91", "").replace(/\D/g, ""); 
-    
+        let digits = value.replace("+91", "").replace(/\D/g, "");
+
         // 10 digits limit
         if (digits.length > 10) {
             digits = digits.slice(0, 10);
         }
-    
+
         // Final value = +91 + digits
         value = "+91" + digits;
-    
+
         setFormData(prev => ({
             ...prev,
             phone: value
         }));
-    
+
         // Clear error
         if (errors.phone) {
             setErrors(prev => ({
@@ -262,23 +262,23 @@ const VendorRegistration = () => {
 
     const handlePostalCodeChange = (e) => {
         let value = e.target.value;
-    
+
         // Sirf digits hi allow karo
         if (!/^\d*$/.test(value)) {
             // ❌ Agar number ke alawa kuch daala → ignore
             return;
         }
-    
+
         // Max 6 digits
         if (value.length > 6) {
             value = value.slice(0, 6);
         }
-    
+
         setFormData(prev => ({
             ...prev,
             postalCode: value
         }));
-    
+
         if (errors.postalCode) {
             setErrors(prev => ({
                 ...prev,
@@ -289,31 +289,24 @@ const VendorRegistration = () => {
 
 
     const sendOtpToEmail = async () => {
-        if (!isLoaded || !signUp) return;          // Clerk not ready
-        if (resendTimer > 0 || sendingOtp) return; // rate-limit
-        if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            showPopupMessage("Please enter a valid email address.", "error");
-            return;
-        }
+        if (!isLoaded || !signUp) return;
+        if (resendTimer > 0 || sendingOtp) return;
 
         try {
             setSendingOtp(true);
-            await signUp.create({ emailAddress: formData.email });
 
-            await signUp.prepareEmailAddressVerification({
-                strategy: "email_code",
-            });
+            // signUp.create sirf ek baar call karo
+            if (!signUp.createdUserId) {
+                await signUp.create({ emailAddress: formData.email });
+            }
 
+            await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
             setOtpSent(true);
             showPopupMessage("OTP sent to your email.", "success");
             startResendTimer();
         } catch (error) {
             console.error("Clerk Email OTP send error:", error);
-            const msg =
-                error?.errors?.[0]?.longMessage ||
-                error?.errors?.[0]?.message ||
-                "OTP sending failed. Please check your email address.";
-            showPopupMessage(msg, "error");
+            showPopupMessage("OTP sending failed", "error");
         } finally {
             setSendingOtp(false);
         }
@@ -327,25 +320,31 @@ const VendorRegistration = () => {
             setVerifyingOtp(true);
 
             const result = await signUp.attemptEmailAddressVerification({ code: otp });
+            console.log("OTP verify result:", result);
 
             if (result.status === "complete") {
-                // If you want to force adding password after verify:
-                // if (formData.password) {
-                //   await signUp.update({ password: formData.password });
-                // }
                 await setActive({ session: result.createdSessionId });
                 setOtpVerified(true);
                 showPopupMessage("Email verified successfully!", "success");
+            } else if (result.status === "missing_requirements") {
+                // Agar password required hai
+                if (formData.password) {
+                    await signUp.update({ password: formData.password });
+                    const finalResult = await signUp.attemptEmailAddressVerification({ code: otp });
+                    if (finalResult.status === "complete") {
+                        await setActive({ session: finalResult.createdSessionId });
+                        setOtpVerified(true);
+                        showPopupMessage("Email verified successfully!", "success");
+                    }
+                } else {
+                    showPopupMessage("Please enter password to complete signup.", "error");
+                }
             } else {
                 showPopupMessage("OTP verification incomplete. Please try again.", "error");
             }
         } catch (error) {
             console.error("Clerk Email OTP verification error:", error);
-            const msg =
-                error?.errors?.[0]?.longMessage ||
-                error?.errors?.[0]?.message ||
-                "Invalid OTP. Please try again.";
-            showPopupMessage(msg, "error");
+            showPopupMessage("Invalid OTP. Please try again.", "error");
         } finally {
             setVerifyingOtp(false);
         }
@@ -404,7 +403,7 @@ const VendorRegistration = () => {
     const handleRazorpaySuccess = async () => {
         setHasPaid(true);
         showPopupMessage("Payment successful! Your request is being sent to admin...", 'success');
-       // await sendRequestToAdmin();
+        // await sendRequestToAdmin();
     };
 
     // const sendRequestToAdmin = async () => {
@@ -437,74 +436,74 @@ const VendorRegistration = () => {
     // };
 
     const handleSubmit = async () => {
-    if (!validateStep(3)) return;
+        if (!validateStep(3)) return;
 
-    setIsSubmitting(true);
-    try {
-        const response = await fetch(`${BASE_URL}/api/auth/register`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(formData),
-        });
+        setIsSubmitting(true);
+        try {
+            const response = await fetch(`${BASE_URL}/api/auth/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData),
+            });
 
-        if (!response.ok) {
-            let errorData;
-            try {
-                errorData = await response.json();
-            } catch (jsonError) {
-                console.error("Error parsing JSON from backend:", jsonError);
-                showPopupMessage("Something went wrong. Please try again.", 'error');
+            if (!response.ok) {
+                let errorData;
+                try {
+                    errorData = await response.json();
+                } catch (jsonError) {
+                    console.error("Error parsing JSON from backend:", jsonError);
+                    showPopupMessage("Something went wrong. Please try again.", 'error');
+                    return;
+                }
+
+                console.error("Registration failed:", errorData);
+
+                if (errorData?.msg === "Email already registered") {
+                    showPopupMessage("This email is already registered. Please login or use a different email.", 'error');
+                } else if (errorData?.msg) {
+                    showPopupMessage(errorData.msg, 'error');
+                } else {
+                    showPopupMessage("Registration failed. Please try again.", 'error');
+                }
+
                 return;
             }
 
-            console.error("Registration failed:", errorData);
+            const data = await response.json();
+            console.log("Registered successfully:", data);
 
-            if (errorData?.msg === "Email already registered") {
-                showPopupMessage("This email is already registered. Please login or use a different email.", 'error');
-            } else if (errorData?.msg) {
-                showPopupMessage(errorData.msg, 'error');
+            // ✅ Show direct success message
+            showPopupMessage("Registration successful! Welcome to EzyFix!", 'success');
+
+            // ✅ Save user info to localStorage
+            if (data.id) {
+                localStorage.setItem("VendorId", data.id);
             } else {
-                showPopupMessage("Registration failed. Please try again.", 'error');
+                console.error("VendorId missing in response");
             }
 
-            return;
+            localStorage.setItem("VendorToken", data.token);
+            localStorage.setItem("vendorName", formData.contactPerson);
+            localStorage.setItem("vendorEmail", formData.email);
+            localStorage.setItem("vendorPhone", formData.phone);
+            localStorage.setItem("vendorBusiness", formData.businessName);
+            localStorage.setItem("vendorBusinessType", formData.businessType);
+            localStorage.setItem("vendorAddress", formData.streetAddress);
+            localStorage.setItem("vendorGoogleMapsLink", formData.googleMapsLink || "");
+            localStorage.setItem("vendorDescription", formData.businessDescription || "");
+
+            // ✅ Redirect to dashboard immediately
+            navigate('/dashboard');
+
+        } catch (error) {
+            console.error("Network error during registration:", error);
+            showPopupMessage("Network error. Please try again.", 'error');
+        } finally {
+            setIsSubmitting(false);
         }
-
-        const data = await response.json();
-        console.log("Registered successfully:", data);
-
-        // ✅ Show direct success message
-        showPopupMessage("Registration successful! Welcome to EzyFix!", 'success');
-
-        // ✅ Save user info to localStorage
-        if (data.id) {
-            localStorage.setItem("VendorId", data.id);
-        } else {
-            console.error("VendorId missing in response");
-        }
-
-        localStorage.setItem("VendorToken", data.token);
-        localStorage.setItem("vendorName", formData.contactPerson);
-        localStorage.setItem("vendorEmail", formData.email);
-        localStorage.setItem("vendorPhone", formData.phone);
-        localStorage.setItem("vendorBusiness", formData.businessName);
-        localStorage.setItem("vendorBusinessType", formData.businessType);
-        localStorage.setItem("vendorAddress", formData.streetAddress);
-        localStorage.setItem("vendorGoogleMapsLink", formData.googleMapsLink || "");
-        localStorage.setItem("vendorDescription", formData.businessDescription || "");
-
-        // ✅ Redirect to dashboard immediately
-        navigate('/dashboard');
-
-    } catch (error) {
-        console.error("Network error during registration:", error);
-        showPopupMessage("Network error. Please try again.", 'error');
-    } finally {
-        setIsSubmitting(false);
-    }
-};
+    };
     const nextStep = () => {
         if (validateStep(currentStep) && currentStep < 3) {
             setCurrentStep(currentStep + 1);
@@ -797,8 +796,8 @@ const VendorRegistration = () => {
                                         label="Postal/Zip Code"
                                         name="postalCode"
                                         type="text"
-                                        inputMode="numeric"      
-                                        pattern="[0-9]*"         
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                         placeholder="Postal Code"
                                         value={formData.postalCode}
                                         onChange={handlePostalCodeChange}
@@ -877,7 +876,7 @@ const VendorRegistration = () => {
                                                 name="password"
                                                 value={formData.password}
                                                 onChange={handleInputChange}
-                                                placeholder="Create a strong password"
+                                                placeholder="Create a strong Fix 8 digit password"
                                                 className={`w-full pl-12 pr-12 py-4 border-2 rounded-xl focus:outline-none transition-all duration-300 text-lg ${errors.password ? 'border-red-500' : 'border-gray-200 focus:border-[#3BB5FF]'
                                                     }`}
                                             />
@@ -989,26 +988,26 @@ const VendorRegistration = () => {
 
             {/* Footer */}
             <footer className="bg-gray-800 text-white py-12">
-            <div className="container mx-auto px-6 text-center">
-                {/* Logo */}
-                <div className="flex justify-center items-center space-x-3 mb-6">
-                    <img
-                    src="/ezyfix-logo.jpg"
-                    alt="EzyFix Logo"
-                    className="w-10 h-10 object-contain rounded-xl"/>
-                <span className="text-2xl font-bold text-[#3BB5FF] hidden sm:inline">EzyFix</span>
-                </div>
-            
-                <p className="text-gray-400 mb-4">
-                    Connecting businesses with customers through amazing deals
-                </p>
-                <p className="text-gray-500 text-sm">© 2025 EzyFix. All rights reserved.</p>
-                <div className="flex flex-wrap justify-center gap-4 mt-2 text-xs text-gray-500">
-                    <Link to="/policy" className="hover:underline">Policy</Link>
-                    <Link to="/terms" className="hover:underline">Terms</Link>
-                    <Link to="/refund" className="hover:underline">Refund</Link>
-                    <Link to="/contact" className="hover:underline">ContactUs</Link>
-                </div>
+                <div className="container mx-auto px-6 text-center">
+                    {/* Logo */}
+                    <div className="flex justify-center items-center space-x-3 mb-6">
+                        <img
+                            src="/ezyfix-logo.jpg"
+                            alt="EzyFix Logo"
+                            className="w-10 h-10 object-contain rounded-xl" />
+                        <span className="text-2xl font-bold text-[#3BB5FF] hidden sm:inline">EzyFix</span>
+                    </div>
+
+                    <p className="text-gray-400 mb-4">
+                        Connecting businesses with customers through amazing deals
+                    </p>
+                    <p className="text-gray-500 text-sm">© 2025 EzyFix. All rights reserved.</p>
+                    <div className="flex flex-wrap justify-center gap-4 mt-2 text-xs text-gray-500">
+                        <Link to="/policy" className="hover:underline">Policy</Link>
+                        <Link to="/terms" className="hover:underline">Terms</Link>
+                        <Link to="/refund" className="hover:underline">Refund</Link>
+                        <Link to="/contact" className="hover:underline">ContactUs</Link>
+                    </div>
                 </div>
             </footer>
             {showConfirmation && (
