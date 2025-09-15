@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { X, User, Mail, Phone, MapPin, Building2, Lock, Eye, EyeOff, Star, Sparkles, Gift, TrendingUp, CheckCircle, AlertCircle, Send } from 'lucide-react';
 import { useSignUp, useAuth } from '@clerk/clerk-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -46,7 +46,6 @@ const InputField = ({ label, name, type = 'text', placeholder, icon: Icon, requi
     </div>
 );
 
-// 🟩 TextAreaField
 const TextAreaField = ({ label, name, placeholder, required = false, value, onChange, error }) => (
     <div className="space-y-2">
         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -67,7 +66,7 @@ const TextAreaField = ({ label, name, placeholder, required = false, value, onCh
         )}
     </div>
 );
-// 🟦 Email OTP Field
+
 const EmailOtpField = ({
     otp,
     setOtp,
@@ -112,7 +111,6 @@ const EmailOtpField = ({
                 <div className="text-green-600 font-semibold">✅ Email Successfully Verified</div>
             )}
 
-            {/* Send / Resend */}
             {!otpVerified && (
                 <div className="mt-1">
                     {!otpSent ? (
@@ -147,19 +145,17 @@ const EmailOtpField = ({
     );
 };
 
+
 const VendorRegistration = () => {
     const [currentStep, setCurrentStep] = useState(1);
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [hasPaid, setHasPaid] = useState(false); // ✅ Payment confirmation state
+    const [hasPaid, setHasPaid] = useState(false);
     const BASE_URL = import.meta.env.VITE_API_BASE_URL;
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
-    const [errorMessage, setErrorMessage] = useState("");
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
-    const [showPopup, setShowPopup] = useState(false);
-    const mapLinkRegex = /^https:\/\/(www\.)?google\.[a-z]+\/maps\?q=(-?\d+(\.\d+)?),(-?\d+(\.\d+)?)$/;
     const [popup, setPopup] = useState({ message: '', type: 'info', visible: false });
     const [tooltipVisible, setTooltipVisible] = useState(true);
     const { signUp, isLoaded } = useSignUp();
@@ -169,6 +165,7 @@ const VendorRegistration = () => {
     const [otpVerified, setOtpVerified] = useState(false);
     const [sendingOtp, setSendingOtp] = useState(false);
     const [verifyingOtp, setVerifyingOtp] = useState(false);
+    const [timerIntervalId, setTimerIntervalId] = useState(null);
 
     const [formData, setFormData] = useState({
         businessName: '',
@@ -185,8 +182,6 @@ const VendorRegistration = () => {
         username: '',
         password: ''
     });
-
-    const [timerIntervalId, setTimerIntervalId] = useState(null);
 
     useEffect(() => {
         const id = setInterval(() => {
@@ -208,16 +203,12 @@ const VendorRegistration = () => {
         }, duration);
     };
 
-
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: value
         }));
-
-        // Clear error when user starts typing
         if (errors[name]) {
             setErrors(prev => ({
                 ...prev,
@@ -225,33 +216,21 @@ const VendorRegistration = () => {
             }));
         }
     };
-    // Send OTP with Clerk (email_code)
 
     const handlePhoneChange = (e) => {
         let value = e.target.value;
-
-        // Agar +91 se start nahi hota toh lagao
         if (!value.startsWith("+91")) {
             value = "+91";
         }
-
-        // Sirf +91 ke baad ke digits lo
         let digits = value.replace("+91", "").replace(/\D/g, "");
-
-        // 10 digits limit
         if (digits.length > 10) {
             digits = digits.slice(0, 10);
         }
-
-        // Final value = +91 + digits
         value = "+91" + digits;
-
         setFormData(prev => ({
             ...prev,
             phone: value
         }));
-
-        // Clear error
         if (errors.phone) {
             setErrors(prev => ({
                 ...prev,
@@ -262,23 +241,16 @@ const VendorRegistration = () => {
 
     const handlePostalCodeChange = (e) => {
         let value = e.target.value;
-
-        // Sirf digits hi allow karo
         if (!/^\d*$/.test(value)) {
-            // ❌ Agar number ke alawa kuch daala → ignore
             return;
         }
-
-        // Max 6 digits
         if (value.length > 6) {
             value = value.slice(0, 6);
         }
-
         setFormData(prev => ({
             ...prev,
             postalCode: value
         }));
-
         if (errors.postalCode) {
             setErrors(prev => ({
                 ...prev,
@@ -287,19 +259,14 @@ const VendorRegistration = () => {
         }
     };
 
-
     const sendOtpToEmail = async () => {
         if (!isLoaded || !signUp) return;
         if (resendTimer > 0 || sendingOtp) return;
-
         try {
             setSendingOtp(true);
-
-            // signUp.create sirf ek baar call karo
             if (!signUp.createdUserId) {
                 await signUp.create({ emailAddress: formData.email });
             }
-
             await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
             setOtpSent(true);
             showPopupMessage("OTP sent to your email.", "success");
@@ -315,30 +282,13 @@ const VendorRegistration = () => {
     const verifyEmailOtp = async () => {
         if (!isLoaded || !signUp) return;
         if (!otp || verifyingOtp) return;
-
         try {
             setVerifyingOtp(true);
-
             const result = await signUp.attemptEmailAddressVerification({ code: otp });
-            console.log("OTP verify result:", result);
-
             if (result.status === "complete") {
                 await setActive({ session: result.createdSessionId });
                 setOtpVerified(true);
                 showPopupMessage("Email verified successfully!", "success");
-            } else if (result.status === "missing_requirements") {
-                // Agar password required hai
-                if (formData.password) {
-                    await signUp.update({ password: formData.password });
-                    const finalResult = await signUp.attemptEmailAddressVerification({ code: otp });
-                    if (finalResult.status === "complete") {
-                        await setActive({ session: finalResult.createdSessionId });
-                        setOtpVerified(true);
-                        showPopupMessage("Email verified successfully!", "success");
-                    }
-                } else {
-                    showPopupMessage("Please enter password to complete signup.", "error");
-                }
             } else {
                 showPopupMessage("OTP verification incomplete. Please try again.", "error");
             }
@@ -349,7 +299,7 @@ const VendorRegistration = () => {
             setVerifyingOtp(false);
         }
     };
-    // Resend timer (60s)
+
     const startResendTimer = () => {
         setResendTimer(60);
         const interval = setInterval(() => {
@@ -364,21 +314,17 @@ const VendorRegistration = () => {
         setTimerIntervalId(interval);
     };
 
-
     const validateStep = (step) => {
         const newErrors = {};
-
         if (step === 1) {
             if (!formData.businessName.trim()) newErrors.businessName = 'Business name is required';
             if (!formData.businessType) newErrors.businessType = 'Business type is required';
         }
-
         if (step === 2) {
             if (!formData.contactPerson.trim()) newErrors.contactPerson = 'Contact person is required';
             if (!formData.email.trim()) newErrors.email = 'Email is required';
             else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Invalid email format';
             if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
-            //if (!otpVerified) newErrors.phone = 'Please verify your phone number';
             if (!formData.streetAddress.trim()) newErrors.streetAddress = 'Street address is required';
             if (!formData.city.trim()) newErrors.city = 'City is required';
             if (!formData.postalCode.trim()) newErrors.postalCode = 'Postal code is required';
@@ -389,58 +335,27 @@ const VendorRegistration = () => {
             ) {
                 newErrors.googleMapsLink = 'Enter a valid Google Maps link';
             }
-
         }
         if (step === 3) {
             if (!formData.username.trim()) newErrors.username = 'Username is required';
             if (!formData.password.trim()) newErrors.password = 'Password is required';
             else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
         }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-    const handleRazorpaySuccess = async () => {
+
+    const handleRazorpaySuccess = () => {
         setHasPaid(true);
-        showPopupMessage("Payment successful! Your request is being sent to admin...", 'success');
-        // await sendRequestToAdmin();
+        showPopupMessage("Payment successful! Please click 'Register Your Business' to submit your request.", 'success');
     };
 
-    // const sendRequestToAdmin = async () => {
-    //     setIsSubmitting(true);
-    //     try {
-    //         const response = await fetch(`${BASE_URL}/api/vendor/request`, {
-    //             method: "POST",
-    //             headers: {
-    //                 "Content-Type": "application/json"
-    //             },
-    //             body: JSON.stringify(formData),
-    //         });
-
-    //         if (!response.ok) {
-    //             showPopupMessage("Failed to send request. Please try again.", 'error');
-    //             return;
-    //         }
-
-    //         showPopupMessage("Your request has been sent to admin. It will be approved within 24 hours.", 'info', 6000);
-    //         // Optionally, disable further actions or redirect to a waiting page
-    //         setTimeout(() => {
-    //             navigate('/vendor-request-pending');
-    //         }, 3000);
-
-    //     } catch (error) {
-    //         showPopupMessage("Network error. Please try again.", 'error');
-    //     } finally {
-    //         setIsSubmitting(false);
-    //     }
-    // };
-
-    const handleSubmit = async () => {
+    const sendRequestToAdmin = async () => {
         if (!validateStep(3)) return;
 
         setIsSubmitting(true);
         try {
-            const response = await fetch(`${BASE_URL}/api/auth/register`, {
+            const response = await fetch(`${BASE_URL}/api/auth/request`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -449,61 +364,24 @@ const VendorRegistration = () => {
             });
 
             if (!response.ok) {
-                let errorData;
-                try {
-                    errorData = await response.json();
-                } catch (jsonError) {
-                    console.error("Error parsing JSON from backend:", jsonError);
-                    showPopupMessage("Something went wrong. Please try again.", 'error');
-                    return;
-                }
-
-                console.error("Registration failed:", errorData);
-
-                if (errorData?.msg === "Email already registered") {
-                    showPopupMessage("This email is already registered. Please login or use a different email.", 'error');
-                } else if (errorData?.msg) {
-                    showPopupMessage(errorData.msg, 'error');
-                } else {
-                    showPopupMessage("Registration failed. Please try again.", 'error');
-                }
-
+                showPopupMessage("Failed to send request. Please try again.", 'error');
                 return;
             }
 
-            const data = await response.json();
-            console.log("Registered successfully:", data);
-
-            // ✅ Show direct success message
-            showPopupMessage("Registration successful! Welcome to EzyFix!", 'success');
-
-            // ✅ Save user info to localStorage
-            if (data.id) {
-                localStorage.setItem("VendorId", data.id);
-            } else {
-                console.error("VendorId missing in response");
-            }
-
-            localStorage.setItem("VendorToken", data.token);
-            localStorage.setItem("vendorName", formData.contactPerson);
-            localStorage.setItem("vendorEmail", formData.email);
-            localStorage.setItem("vendorPhone", formData.phone);
-            localStorage.setItem("vendorBusiness", formData.businessName);
-            localStorage.setItem("vendorBusinessType", formData.businessType);
-            localStorage.setItem("vendorAddress", formData.streetAddress);
-            localStorage.setItem("vendorGoogleMapsLink", formData.googleMapsLink || "");
-            localStorage.setItem("vendorDescription", formData.businessDescription || "");
-
-            // ✅ Redirect to dashboard immediately
-            navigate('/dashboard');
+            showPopupMessage("Your request has been sent to the admin for approval. You will be notified within 24 hours.", 'info', 6000);
+            
+            setTimeout(() => {
+                navigate('/vendor-request-pending');
+            }, 3000);
 
         } catch (error) {
-            console.error("Network error during registration:", error);
-            showPopupMessage("Network error. Please try again.", 'error');
+            console.error("Network error submitting request:", error);
+            showPopupMessage("A network error occurred. Please check your connection and try again.", 'error');
         } finally {
             setIsSubmitting(false);
         }
     };
+
     const nextStep = () => {
         if (validateStep(currentStep) && currentStep < 3) {
             setCurrentStep(currentStep + 1);
@@ -532,51 +410,18 @@ const VendorRegistration = () => {
     ];
 
     const provinces = [
-        "Andhra Pradesh",
-        "Arunachal Pradesh",
-        "Assam",
-        "Bihar",
-        "Chhattisgarh",
-        "Goa",
-        "Gujarat",
-        "Haryana",
-        "Himachal Pradesh",
-        "Jharkhand",
-        "Karnataka",
-        "Kerala",
-        "Madhya Pradesh",
-        "Maharashtra",
-        "Manipur",
-        "Meghalaya",
-        "Mizoram",
-        "Nagaland",
-        "Odisha",
-        "Punjab",
-        "Rajasthan",
-        "Sikkim",
-        "Tamil Nadu",
-        "Telangana",
-        "Tripura",
-        "Uttar Pradesh",
-        "Uttarakhand",
-        "West Bengal",
-        "Andaman and Nicobar Islands",
-        "Chandigarh",
-        "Dadra and Nagar Haveli and Daman and Diu",
-        "Delhi",
-        "Jammu and Kashmir",
-        "Ladakh",
-        "Lakshadweep",
-        "Puducherry"
+        "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana",
+        "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
+        "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana",
+        "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh",
+        "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
     ];
 
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#e0f4ff] via-[#e0f4ff] to-[#e0f4ff]">
-            {/* Header */}
             <header className="bg-white shadow-md border-b-4 border-[#3BB5FF]">
                 <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                    {/* Logo */}
                     <div className="flex items-center space-x-3">
                         <img
                             src="/ezyfix-logo.jpg"
@@ -588,7 +433,6 @@ const VendorRegistration = () => {
                 </div>
             </header>
 
-            {/* Hero Section */}
             <div className="bg-[#3BB5FF] text-white py-16">
                 <div className="container mx-auto px-6 text-center">
                     <div className="flex justify-center mb-6">
@@ -618,16 +462,14 @@ const VendorRegistration = () => {
             </div>
 
             <div className="container mx-auto px-6 py-12">
-                {/* Progress Stepper */}
                 <div className="flex justify-center mb-12 px-4">
                     <div className="flex flex-col sm:flex-row items-center sm:space-x-4 space-y-6 sm:space-y-0 w-full max-w-4xl">
                         {[1, 2, 3].map((step) => (
                             <div key={step} className="flex flex-col sm:flex-row items-center w-full sm:w-auto">
-                                {/* Step Circle */}
                                 <div
                                     className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 ${currentStep >= step
-                                        ? 'bg-[#3BB5FF] text-white shadow-lg'
-                                        : 'bg-gray-200 text-gray-600'
+                                            ? 'bg-[#3BB5FF] text-white shadow-lg'
+                                            : 'bg-gray-200 text-gray-600'
                                         }`}
                                 >
                                     {currentStep > step ? (
@@ -637,7 +479,6 @@ const VendorRegistration = () => {
                                     )}
                                 </div>
 
-                                {/* Step Label */}
                                 <div className="mt-2 sm:mt-0 sm:ml-3 text-center sm:text-left">
                                     <p
                                         className={`text-sm font-semibold ${currentStep >= step ? 'text-[#3BB5FF]' : 'text-gray-500'
@@ -648,8 +489,6 @@ const VendorRegistration = () => {
                                         {step === 3 && 'Account Setup'}
                                     </p>
                                 </div>
-
-                                {/* Connector Line */}
                                 {step < 3 && (
                                     <div
                                         className={`hidden sm:block w-16 h-1 mx-4 rounded ${currentStep > step ? 'bg-[#3BB5FF]' : 'bg-gray-200'
@@ -662,10 +501,8 @@ const VendorRegistration = () => {
                 </div>
 
 
-                {/* Form Card */}
                 <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-t-4 border-[#3BB5FF] max-w-4xl mx-auto">
                     <div className="p-8 md:p-12">
-                        {/* Step 1: Business Information */}
                         {currentStep === 1 && (
                             <div className="space-y-8">
                                 <div className="text-center mb-8">
@@ -703,12 +540,10 @@ const VendorRegistration = () => {
                                         onChange={handleInputChange}
                                         error={errors.businessDescription}
                                     />
-
                                 </div>
                             </div>
                         )}
 
-                        {/* Step 2: Contact Information */}
                         {currentStep === 2 && (
                             <div className="space-y-8">
                                 <div className="text-center mb-8">
@@ -739,8 +574,6 @@ const VendorRegistration = () => {
                                         error={errors.phone}
                                         required
                                     />
-
-
                                     <InputField
                                         label="Email"
                                         name="email"
@@ -764,7 +597,6 @@ const VendorRegistration = () => {
                                         verifying={verifyingOtp}
                                         email={formData.email}
                                     />
-
                                     <InputField
                                         label="Street Address"
                                         name="streetAddress"
@@ -804,7 +636,6 @@ const VendorRegistration = () => {
                                         error={errors.postalCode}
                                         required
                                     />
-
                                     <div className="relative group w-full">
                                         <InputField
                                             label="Google Maps Link"
@@ -815,12 +646,8 @@ const VendorRegistration = () => {
                                             error={errors.googleMapsLink}
                                             required
                                         />
-
-                                        {/* Tooltip */}
-                                        {/* Tooltip */}
                                         {tooltipVisible && (
                                             <div className="absolute top-0 left-0 sm:left-full sm:ml-2 mt-2 sm:mt-0 w-full sm:w-72 p-3 bg-white text-gray-800 text-sm rounded-lg shadow-lg z-50 hidden group-hover:block">
-                                                {/* Close Button */}
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -845,7 +672,6 @@ const VendorRegistration = () => {
                             </div>
                         )}
 
-                        {/* Step 3: Account Setup */}
                         {currentStep === 3 && (
                             <div className="space-y-8">
                                 <div className="text-center mb-8">
@@ -895,7 +721,6 @@ const VendorRegistration = () => {
                                             </p>
                                         )}
                                     </div>
-
                                 </div>
 
                                 <div className="bg-[#e6f6ff] p-6 rounded-2xl border border-[#3BB5FF]/40">
@@ -906,45 +731,34 @@ const VendorRegistration = () => {
                                     <ul className="space-y-2 text-[#3BB5FF]">
                                         <li className="flex items-center space-x-2">
                                             <div className="w-2 h-2 bg-[#3BB5FF] rounded-full"></div>
-                                            <span>Instant access to your vendor dashboard</span>
+                                            <span>Your request is sent for admin approval</span>
+                                        </li>
+                                        <li className="flex items-center space-x-2">
+                                            <div className="w-2 h-2 bg-[#3BB5FF] rounded-full"></div>
+                                            <span>Get access to your dashboard after approval</span>
                                         </li>
                                         <li className="flex items-center space-x-2">
                                             <div className="w-2 h-2 bg-[#3BB5FF] rounded-full"></div>
                                             <span>Start creating amazing coupon deals</span>
-                                        </li>
-                                        <li className="flex items-center space-x-2">
-                                            <div className="w-2 h-2 bg-[#3BB5FF] rounded-full"></div>
-                                            <span>Attract new customers immediately</span>
                                         </li>
                                     </ul>
                                 </div>
                             </div>
                         )}
 
-                        {/* Navigation Buttons */}
                         <div className="flex justify-between items-center mt-12 pt-8 border-t border-gray-200">
                             {currentStep > 1 && (
-                                <button
-                                    type="button"
-                                    onClick={prevStep}
-                                    className="px-8 py-4 border-2 border-[#3BB5FF] text-[#3BB5FF] rounded-xl font-semibold hover:bg-[#e0f4ff] transition-all duration-300"
-                                >
+                                <button type="button" onClick={prevStep} className="px-8 py-4 border-2 border-[#3BB5FF] text-[#3BB5FF] rounded-xl font-semibold hover:bg-[#e0f4ff] transition-all duration-300">
                                     Previous
                                 </button>
                             )}
 
                             {currentStep < 3 ? (
-                                <button
-                                    type="button"
-                                    onClick={nextStep}
-                                    className="ml-auto px-8 py-4 bg-[#3BB5FF] text-white rounded-xl font-semibold hover:bg-[#1aa0ef] transition-all duration-300 shadow-lg"
-                                >
+                                <button type="button" onClick={nextStep} className="ml-auto px-8 py-4 bg-[#3BB5FF] text-white rounded-xl font-semibold hover:bg-[#1aa0ef] transition-all duration-300 shadow-lg">
                                     Next Step
                                 </button>
                             ) : (
-
                                 <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-end items-center">
-                                    {/* ✅ Razorpay Payment Button */}
                                     {!hasPaid && (
                                         <RazorpayButton onPaymentSuccess={handleRazorpaySuccess} />
                                     )}
@@ -957,7 +771,7 @@ const VendorRegistration = () => {
                                         {isSubmitting ? (
                                             <>
                                                 <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                <span className="text-sm sm:text-base">Registering...</span>
+                                                <span className="text-sm sm:text-base">Submitting...</span>
                                             </>
                                         ) : (
                                             <>
@@ -972,24 +786,18 @@ const VendorRegistration = () => {
                     </div>
                 </div>
 
-                {/* Login Redirect Section */}
                 <div className="text-center mt-12">
                     <p className="text-lg text-gray-700">
                         Already have an account?
                     </p>
-                    <button
-                        onClick={navigateToLogin}
-                        className="mt-2 px-6 py-3 bg-white text-[#3BB5FF] border border-[#3BB5FF] rounded-full font-semibold hover:bg-[#3BB5FF] hover:text-white transition duration-300"
-                    >
+                    <button onClick={navigateToLogin} className="mt-2 px-6 py-3 bg-white text-[#3BB5FF] border border-[#3BB5FF] rounded-full font-semibold hover:bg-[#3BB5FF] hover:text-white transition duration-300">
                         Login Here
                     </button>
                 </div>
             </div>
 
-            {/* Footer */}
             <footer className="bg-gray-800 text-white py-12">
                 <div className="container mx-auto px-6 text-center">
-                    {/* Logo */}
                     <div className="flex justify-center items-center space-x-3 mb-6">
                         <img
                             src="/ezyfix-logo.jpg"
@@ -1010,6 +818,7 @@ const VendorRegistration = () => {
                     </div>
                 </div>
             </footer>
+
             {showConfirmation && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
                     <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
@@ -1027,7 +836,7 @@ const VendorRegistration = () => {
                             <button
                                 onClick={() => {
                                     setShowConfirmation(false);
-                                    handleSubmit();
+                                    sendRequestToAdmin();
                                 }}
                                 className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 font-semibold shadow"
                             >
@@ -1037,6 +846,7 @@ const VendorRegistration = () => {
                     </div>
                 </div>
             )}
+            
             {popup.visible && (
                 <Popup
                     message={popup.message}

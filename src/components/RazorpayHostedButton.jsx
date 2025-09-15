@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 const RazorpayButton = ({ onPaymentSuccess }) => {
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -17,7 +16,7 @@ const RazorpayButton = ({ onPaymentSuccess }) => {
     }
     const options = {
       key: "rzp_live_7zN94jrBgxVl1T",
-      amount: 120000,
+      amount: 100,
       currency: "INR",
       name: "EzyFix Vendor",
       description: "Business Registration Fee",
